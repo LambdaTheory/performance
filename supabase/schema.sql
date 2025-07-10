@@ -8,7 +8,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 员工信息表
 CREATE TABLE PT_employees (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-  employee_id VARCHAR(50) UNIQUE NOT NULL, -- 工号
+  user_id VARCHAR(50) UNIQUE NOT NULL, -- 飞书用户ID
   name VARCHAR(100) NOT NULL, -- 姓名
   department VARCHAR(100), -- 部门
   position VARCHAR(100), -- 职位
@@ -36,7 +36,7 @@ CREATE TABLE PT_survey_responses (
   template_id UUID REFERENCES PT_survey_templates(id),
   employee_id UUID REFERENCES PT_employees(id),
   employee_name VARCHAR(100) NOT NULL, -- 冗余字段，方便查询
-  employee_number VARCHAR(50), -- 工号
+  user_id VARCHAR(50), -- 飞书用户ID
   
   -- 问卷内容字段
   performance_feedback TEXT, -- 绩效评估与反馈
@@ -73,7 +73,7 @@ CREATE TABLE PT_users (
 CREATE INDEX idx_PT_survey_responses_employee_id ON PT_survey_responses(employee_id);
 CREATE INDEX idx_PT_survey_responses_status ON PT_survey_responses(status);
 CREATE INDEX idx_PT_survey_responses_submitted_at ON PT_survey_responses(submitted_at);
-CREATE INDEX idx_PT_employees_employee_id ON PT_employees(employee_id);
+CREATE INDEX idx_PT_employees_user_id ON PT_employees(user_id);
 
 -- 创建更新时间触发器
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -142,11 +142,11 @@ INSERT INTO PT_survey_templates (name, description, questions) VALUES (
 );
 
 -- 插入测试数据（可选）
-INSERT INTO PT_employees (employee_id, name, department, position, email) VALUES 
-('EMP001', '张三', '技术部', '前端工程师', 'zhangsan@company.com'),
-('EMP002', '李四', '技术部', '后端工程师', 'lisi@company.com'),
-('EMP003', '王五', '产品部', '产品经理', 'wangwu@company.com'),
-('ADMIN', '管理员', '人事部', '系统管理员', 'admin@company.com');
+INSERT INTO PT_employees (user_id, name, department, position, email) VALUES 
+('de44f69e', 'Kun', '技术部', '前端工程师', 'kun@looplaygame.com'),
+('test001', '张三', '技术部', '前端工程师', 'zhangsan@company.com'),
+('test002', '李四', '技术部', '后端工程师', 'lisi@company.com'),
+('test003', '王五', '产品部', '产品经理', 'wangwu@company.com');
 
 -- RLS (Row Level Security) 策略
 ALTER TABLE pt_employees ENABLE ROW LEVEL SECURITY;

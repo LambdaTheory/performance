@@ -118,10 +118,10 @@ const AdminDashboard = () => {
       width: 120
     },
     {
-      title: '工号',
-      dataIndex: 'employee_number',
-      key: 'employee_number',
-      width: 100
+      title: '用户ID',
+      dataIndex: 'user_id',
+      key: 'user_id',
+      width: 120
     },
     {
       title: '状态',
@@ -352,7 +352,7 @@ const AdminDashboard = () => {
           <div>
             <Descriptions title="基本信息" bordered column={2}>
               <Descriptions.Item label="员工姓名">{selectedResponse.employee_name}</Descriptions.Item>
-              <Descriptions.Item label="工号">{selectedResponse.employee_number}</Descriptions.Item>
+              <Descriptions.Item label="用户ID">{selectedResponse.user_id}</Descriptions.Item>
               <Descriptions.Item label="状态">{getStatusTag(selectedResponse.status)}</Descriptions.Item>
               <Descriptions.Item label="提交时间">
                 {selectedResponse.submitted_at ? 

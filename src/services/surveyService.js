@@ -24,15 +24,28 @@ export class SurveyService {
     return data;
   }
 
-  // 根据工号查找员工
-  static async getEmployeeByNumber(employeeNumber) {
+
+  // 根据用户ID查找员工
+  static async getEmployeeByUserId(userId) {
     const { data, error } = await supabase
       .from(TABLES.EMPLOYEES)
       .select('*')
-      .eq('employee_id', employeeNumber)
+      .eq('user_id', userId)
       .single();
 
     if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
+    return data;
+  }
+
+  // 创建员工记录
+  static async createEmployee(employeeData) {
+    const { data, error } = await supabase
+      .from(TABLES.EMPLOYEES)
+      .insert([employeeData])
+      .select()
+      .single();
+
+    if (error) throw error;
     return data;
   }
 

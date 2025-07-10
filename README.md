@@ -69,8 +69,17 @@ cp .env.example .env
 编辑 `.env` 文件：
 
 ```env
+# Supabase 配置
 REACT_APP_SUPABASE_URL=your_supabase_project_url
 REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# 飞书OAuth配置
+REACT_APP_FEISHU_APP_ID=your_feishu_app_id
+REACT_APP_FEISHU_APP_SECRET=your_feishu_app_secret
+REACT_APP_FEISHU_REDIRECT_URI=http://localhost:3000
+
+# 管理员用户ID列表（用逗号分隔）
+REACT_APP_ADMIN_IDS=your_user_id1,your_user_id2
 ```
 
 ### 5. 启动应用
@@ -87,7 +96,7 @@ npm start
 
 ```sql
 -- 员工信息表
-PT_employees (id, employee_id, name, department, position, email)
+PT_employees (id, user_id, name, department, position, email)
 
 -- 问卷模板表  
 PT_survey_templates (id, name, description, questions, is_active)
@@ -106,7 +115,7 @@ PT_users (id, email, employee_id, role, is_active)
 ### 问卷提交功能
 
 1. **基本信息填写**
-   - 工号输入（自动验证员工信息）
+   - 飞书用户ID（自动获取并填充）
    - 姓名、部门、职位自动填充
 
 2. **问卷内容**
@@ -253,11 +262,18 @@ await SurveyService.getStatistics()
 
 确保已执行 `schema.sql` 并启用 RLS 策略
 
-### 3. 员工信息验证失败
+### 3. 用户信息加载失败
 
-检查 `PT_employees` 表中是否有对应的员工数据
+系统会自动根据飞书登录用户创建员工记录，如遇问题请检查飞书认证配置
 
 ## 📝 更新日志
+
+### v1.1.0 (2025-01-10)
+- 🔄 将工号系统改为飞书用户ID系统
+- 🔐 集成飞书OAuth认证
+- ✨ 用户信息自动获取和填充
+- 🎯 基于飞书用户ID的管理员权限控制
+- 🗄️ 数据库结构优化
 
 ### v1.0.0 (2025-01-07)
 - ✨ 初始版本发布

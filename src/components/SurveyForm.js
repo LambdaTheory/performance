@@ -19,11 +19,13 @@ import {
   SendOutlined
 } from '@ant-design/icons';
 import { SurveyService } from '../services/surveyService';
+import { useAuth } from '../contexts/AuthContext';
 
 const { TextArea } = Input;
 const { Step } = Steps;
 
 const SurveyForm = () => {
+  const { user } = useAuth();
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [template, setTemplate] = useState(null);
@@ -34,7 +36,11 @@ const SurveyForm = () => {
 
   useEffect(() => {
     loadTemplate();
-  }, []);
+    if (user) {
+      // 自动填充用户信息
+      loadOrCreateEmployee();
+    }
+  }, [user]);
 
   const loadTemplate = async () => {
     try {
@@ -46,26 +52,38 @@ const SurveyForm = () => {
     }
   };
 
-  const validateEmployee = async (employeeNumber) => {
-    if (!employeeNumber) return false;
+  const loadOrCreateEmployee = async () => {
+    if (!user) return;
     
     try {
-      const employeeData = await SurveyService.getEmployeeByNumber(employeeNumber);
-      if (employeeData) {
-        setEmployee(employeeData);
-        form.setFieldsValue({
-          employee_name: employeeData.name,
-          department: employeeData.department,
-          position: employeeData.position
+      // 先尝试通过用户ID查找员工信息
+      let employeeData = await SurveyService.getEmployeeByUserId(user.id);
+      
+      if (!employeeData) {
+        // 如果找不到，创建新的员工记录
+        employeeData = await SurveyService.createEmployee({
+          user_id: user.id,
+          name: user.name,
+          department: '待设置', // 可以后续完善
+          position: '待设置',
+          email: user.email || ''
         });
-        return true;
-      } else {
-        message.warning('未找到该工号对应的员工信息');
-        return false;
       }
+      
+      setEmployee(employeeData);
+      form.setFieldsValue({
+        user_id: user.id,
+        employee_name: user.name,
+        department: employeeData.department,
+        position: employeeData.position
+      });
     } catch (error) {
-      console.error('Error validating employee:', error);
-      return false;
+      console.error('Error loading employee:', error);
+      // 如果出错，至少填充基本的用户信息
+      form.setFieldsValue({
+        user_id: user.id,
+        employee_name: user.name
+      });
     }
   };
 
@@ -73,9 +91,7 @@ const SurveyForm = () => {
     try {
       if (currentStep === 0) {
         // 验证基本信息
-        const values = await form.validateFields(['employee_number', 'employee_name']);
-        const isValid = await validateEmployee(values.employee_number);
-        if (!isValid) return;
+        await form.validateFields(['user_id', 'employee_name']);
       }
       
       setCurrentStep(currentStep + 1);
@@ -96,8 +112,8 @@ const SurveyForm = () => {
       const responseData = {
         template_id: template?.id || null,
         employee_id: employee?.id || null,
-        employee_number: values.employee_number,
-        employee_name: values.employee_name || employee?.name || '未知员工',
+        user_id: values.user_id || user?.id,
+        employee_name: values.employee_name || user?.name || '未知员工',
         performance_feedback: values.performance_feedback,
         role_recognition: values.role_recognition,
         support_needs: values.support_needs,
@@ -132,8 +148,8 @@ const SurveyForm = () => {
       const responseData = {
         template_id: template?.id || null,
         employee_id: employee?.id || null,
-        employee_number: values.employee_number,
-        employee_name: values.employee_name || employee?.name || '未知员工',
+        user_id: values.user_id || user?.id,
+        employee_name: values.employee_name || user?.name || '未知员工',
         performance_feedback: values.performance_feedback,
         role_recognition: values.role_recognition,
         support_needs: values.support_needs,
@@ -211,13 +227,13 @@ const SurveyForm = () => {
         return (
           <Card title="基本信息" style={{ marginTop: 16 }}>
             <Form.Item
-              name="employee_number"
-              label="工号"
-              rules={[{ required: true, message: '请输入工号' }]}
+              name="user_id"
+              label="用户ID"
+              rules={[{ required: true, message: '用户ID不能为空' }]}
             >
               <Input 
-                placeholder="请输入您的工号" 
-                onBlur={(e) => validateEmployee(e.target.value)}
+                placeholder="飞书用户ID（自动填充）" 
+                disabled
               />
             </Form.Item>
             
@@ -265,7 +281,7 @@ const SurveyForm = () => {
           <Card title="确认提交" style={{ marginTop: 16 }}>
             <div style={{ marginBottom: 16 }}>
               <h4>基本信息</h4>
-              <p><strong>工号：</strong>{values.employee_number}</p>
+              <p><strong>用户ID：</strong>{values.user_id}</p>
               <p><strong>姓名：</strong>{values.employee_name}</p>
               <p><strong>部门：</strong>{values.department}</p>
               <p><strong>职位：</strong>{values.position}</p>
@@ -316,13 +332,13 @@ const SurveyForm = () => {
           <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
             <Card title="基本信息" style={{ marginTop: 16 }}>
               <Form.Item
-                name="employee_number"
-                label="工号"
-                rules={[{ required: true, message: '请输入工号' }]}
+                name="user_id"
+                label="用户ID"
+                rules={[{ required: true, message: '用户ID不能为空' }]}
               >
                 <Input 
-                  placeholder="请输入您的工号" 
-                  onBlur={(e) => validateEmployee(e.target.value)}
+                  placeholder="飞书用户ID（自动填充）" 
+                  disabled
                 />
               </Form.Item>
               
