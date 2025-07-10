@@ -1,0 +1,68 @@
+.App {
+  text-align: center;
+}
+
+/* 自定义样式 */
+.ant-layout-header {
+  padding: 0 24px;
+}
+
+.ant-layout-sider {
+  background: #fff;
+}
+
+.ant-menu {
+  border-right: 1px solid #e8e8e8;
+}
+
+.ant-card {
+  margin-bottom: 16px;
+}
+
+.ant-table-tbody > tr > td {
+  padding: 8px 16px;
+}
+
+.ant-descriptions-item-label {
+  background: #fafafa;
+  font-weight: 500;
+}
+
+/* 问卷表单样式 */
+.survey-form {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.survey-form .ant-steps {
+  margin-bottom: 24px;
+}
+
+.survey-form .ant-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 管理后台样式 */
+.admin-dashboard {
+  padding: 24px;
+}
+
+.admin-dashboard .ant-statistic-content {
+  font-size: 24px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .ant-layout-header {
+    padding: 0 16px;
+  }
+  
+  .survey-form {
+    padding: 16px;
+  }
+  
+  .admin-dashboard {
+    padding: 16px;
+  }
+}
