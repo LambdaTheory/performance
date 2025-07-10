@@ -107,16 +107,14 @@ export const AuthProvider = ({ children }) => {
   const getUserRole = () => {
     if (!user) return null;
     
-    // 这里可以根据用户信息判断角色
-    // 例如，根据用户邮箱域名或特定的用户ID来判断
-    const adminEmails = process.env.REACT_APP_ADMIN_EMAILS?.split(',') || [];
+    // 使用用户ID进行管理员识别
+    const adminIds = process.env.REACT_APP_ADMIN_IDS?.split(',').map(id => id.trim()) || [];
     
-    if (adminEmails.includes(user.email)) {
+    // 检查用户ID是否在管理员列表中
+    if (adminIds.includes(user.id)) {
       return 'admin';
     }
     
-    // 也可以根据飞书部门信息判断角色
-    // 或者从后端API获取用户角色
     return 'user';
   };
 

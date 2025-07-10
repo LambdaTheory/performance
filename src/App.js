@@ -82,7 +82,9 @@ function MainApp() {
         
         <Space>
           <span style={{ color: '#666' }}>
-            <UserOutlined /> 当前用户: {user?.name || '未知用户'}
+            <UserOutlined /> 当前用户: {user?.name || '未知用户'} 
+            {userRole === 'admin' && <span style={{ color: '#52c41a', marginLeft: 8 }}>[管理员]</span>}
+            {userRole === 'user' && <span style={{ color: '#1890ff', marginLeft: 8 }}>[普通用户]</span>}
           </span>
           <Button 
             type="text" 
