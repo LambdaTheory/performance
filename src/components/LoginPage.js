@@ -15,9 +15,14 @@ const LoginPage = () => {
     const state = urlParams.get('state');
     
     if (code && state) {
-      handleAuthCallback(urlParams);
+      // 使用 ref 防止 React Strict Mode 重复执行
+      const hasProcessed = sessionStorage.getItem(`oauth_processed_${code}`);
+      if (!hasProcessed) {
+        sessionStorage.setItem(`oauth_processed_${code}`, 'true');
+        handleAuthCallback(urlParams);
+      }
     }
-  }, [handleAuthCallback]);
+  }, []); // 移除依赖，只在组件挂载时执行一次
 
   const handleLogin = () => {
     login();

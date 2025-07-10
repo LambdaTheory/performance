@@ -42,7 +42,12 @@ export const AuthProvider = ({ children }) => {
       window.location.href = authUrl;
     } catch (error) {
       console.error('Login failed:', error);
-      message.error('登录失败，请重试');
+      // 检查是否是因为失败次数过多被阻止
+      if (error.message.includes('认证服务已暂停')) {
+        message.error(error.message, 10); // 显示10秒
+      } else {
+        message.error('登录失败，请重试');
+      }
     }
   };
 
@@ -60,7 +65,12 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (error) {
       console.error('Auth callback failed:', error);
-      message.error('登录失败: ' + error.message);
+      // 检查是否是因为失败次数过多被阻止
+      if (error.message.includes('认证服务已暂停')) {
+        message.error(error.message, 10); // 显示10秒
+      } else {
+        message.error('登录失败: ' + error.message);
+      }
       throw error;
     } finally {
       setLoading(false);

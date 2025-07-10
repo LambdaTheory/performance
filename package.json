@@ -36,6 +36,7 @@
   ],
   "author": "",
   "license": "MIT",
+  "proxy": "https://open.feishu.cn",
   "browserslist": {
     "production": [
       ">0.2%",

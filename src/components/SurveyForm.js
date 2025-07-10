@@ -142,8 +142,6 @@ const SurveyForm = () => {
         summary: values.summary
       };
 
-      console.log('提交的数据:', responseData);
-      console.log('表单值:', values);
 
       let response;
       if (savedResponseId) {
