@@ -1,20 +1,41 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Button, Space } from 'antd';
+import { Layout, Menu, Button, Space, Spin } from 'antd';
 import { 
   FormOutlined, 
   DashboardOutlined, 
   UserOutlined,
   LogoutOutlined 
 } from '@ant-design/icons';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import SurveyForm from './components/SurveyForm';
 import AdminDashboard from './components/AdminDashboard';
+import LoginPage from './components/LoginPage';
 import './App.css';
 
 const { Header, Content, Sider } = Layout;
 
-function App() {
+function MainApp() {
   const [currentView, setCurrentView] = useState('survey');
-  const [userRole, setUserRole] = useState('admin'); // 临时设置为管理员，后续集成认证
+  const { user, isAuthenticated, loading, logout, getUserRole } = useAuth();
+  
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
+      }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+
+  const userRole = getUserRole();
 
   const menuItems = [
     {
@@ -61,15 +82,12 @@ function App() {
         
         <Space>
           <span style={{ color: '#666' }}>
-            <UserOutlined /> 当前用户: 管理员
+            <UserOutlined /> 当前用户: {user?.name || '未知用户'}
           </span>
           <Button 
             type="text" 
             icon={<LogoutOutlined />}
-            onClick={() => {
-              // TODO: 实现登出逻辑
-              console.log('Logout clicked');
-            }}
+            onClick={logout}
           >
             退出
           </Button>
@@ -103,6 +121,14 @@ function App() {
         </Layout>
       </Layout>
     </Layout>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }
 
