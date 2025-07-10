@@ -143,10 +143,7 @@ INSERT INTO PT_survey_templates (name, description, questions) VALUES (
 
 -- 插入测试数据（可选）
 INSERT INTO PT_employees (user_id, name, department, position, email) VALUES 
-('de44f69e', 'Kun', '技术部', '前端工程师', 'kun@looplaygame.com'),
-('test001', '张三', '技术部', '前端工程师', 'zhangsan@company.com'),
-('test002', '李四', '技术部', '后端工程师', 'lisi@company.com'),
-('test003', '王五', '产品部', '产品经理', 'wangwu@company.com');
+('de44f69e', 'Kun', '技术部', '前端工程师', 'kun@looplaygame.com');
 
 -- RLS (Row Level Security) 策略
 ALTER TABLE pt_employees ENABLE ROW LEVEL SECURITY;
