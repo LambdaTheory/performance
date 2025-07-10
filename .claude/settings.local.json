@@ -5,7 +5,8 @@
       "Bash(mkdir:*)",
       "Bash(chmod:*)",
       "WebFetch(domain:open.feishu.cn)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

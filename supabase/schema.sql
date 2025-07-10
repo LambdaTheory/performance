@@ -149,40 +149,60 @@ INSERT INTO PT_employees (employee_id, name, department, position, email) VALUES
 ('ADMIN', '管理员', '人事部', '系统管理员', 'admin@company.com');
 
 -- RLS (Row Level Security) 策略
-ALTER TABLE PT_employees ENABLE ROW LEVEL SECURITY;
-ALTER TABLE PT_survey_responses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE PT_survey_templates ENABLE ROW LEVEL SECURITY;
-ALTER TABLE PT_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pt_employees ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pt_survey_responses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pt_survey_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pt_users ENABLE ROW LEVEL SECURITY;
 
--- 用户只能查看自己的问卷回复
-CREATE POLICY "Users can view own responses" ON PT_survey_responses
-  FOR SELECT USING (auth.uid()::text = (SELECT id::text FROM PT_users WHERE PT_users.email = auth.email()));
+-- 为匿名用户创建访问策略（用于内部问卷系统）
+CREATE POLICY "Anon users can view employees" ON pt_employees
+  FOR SELECT TO anon USING (true);
 
--- 用户可以创建自己的问卷回复  
-CREATE POLICY "Users can create own responses" ON PT_survey_responses
-  FOR INSERT WITH CHECK (auth.uid()::text = (SELECT id::text FROM PT_users WHERE PT_users.email = auth.email()));
+CREATE POLICY "Anon users can view templates" ON pt_survey_templates
+  FOR SELECT TO anon USING (is_active = true);
 
--- 用户可以更新自己的草稿问卷
-CREATE POLICY "Users can update own draft responses" ON PT_survey_responses
-  FOR UPDATE USING (
-    auth.uid()::text = (SELECT id::text FROM PT_users WHERE PT_users.email = auth.email()) 
-    AND status = 'draft'
-  );
+CREATE POLICY "Anon users can view responses" ON pt_survey_responses
+  FOR SELECT TO anon USING (true);
 
--- 管理员可以查看所有问卷
-CREATE POLICY "Admins can view all responses" ON PT_survey_responses
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM PT_users 
-      WHERE PT_users.email = auth.email() 
-      AND PT_users.role IN ('admin', 'manager')
-    )
-  );
+CREATE POLICY "Anon users can create responses" ON pt_survey_responses
+  FOR INSERT TO anon WITH CHECK (true);
 
--- 所有用户可以查看问卷模板
-CREATE POLICY "All users can view templates" ON PT_survey_templates
-  FOR SELECT USING (is_active = true);
+CREATE POLICY "Anon users can update responses" ON pt_survey_responses
+  FOR UPDATE TO anon USING (true);
 
--- 所有用户可以查看员工信息
-CREATE POLICY "All users can view employees" ON PT_employees
-  FOR SELECT USING (true);
+CREATE POLICY "Anon users can view users" ON pt_users
+  FOR SELECT TO anon USING (true);
+
+-- 为认证用户创建访问策略
+CREATE POLICY "Auth users can view employees" ON pt_employees
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Auth users can view templates" ON pt_survey_templates
+  FOR SELECT TO authenticated USING (is_active = true);
+
+CREATE POLICY "Auth users can view responses" ON pt_survey_responses
+  FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Auth users can create responses" ON pt_survey_responses
+  FOR INSERT TO authenticated WITH CHECK (true);
+
+CREATE POLICY "Auth users can update responses" ON pt_survey_responses
+  FOR UPDATE TO authenticated USING (true);
+
+CREATE POLICY "Auth users can view users" ON pt_users
+  FOR SELECT TO authenticated USING (true);
+
+-- 为所有角色授予必要权限
+GRANT ALL ON pt_employees TO anon;
+GRANT ALL ON pt_survey_responses TO anon;
+GRANT ALL ON pt_survey_templates TO anon;
+GRANT ALL ON pt_users TO anon;
+
+GRANT ALL ON pt_employees TO authenticated;
+GRANT ALL ON pt_survey_responses TO authenticated;
+GRANT ALL ON pt_survey_templates TO authenticated;
+GRANT ALL ON pt_users TO authenticated;
+
+-- 授予序列权限
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO anon;
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;

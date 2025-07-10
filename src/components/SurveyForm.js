@@ -27,6 +27,7 @@ const SurveyForm = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [template, setTemplate] = useState(null);
+  const [employee, setEmployee] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [savedResponseId, setSavedResponseId] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -49,12 +50,13 @@ const SurveyForm = () => {
     if (!employeeNumber) return false;
     
     try {
-      const employee = await SurveyService.getEmployeeByNumber(employeeNumber);
-      if (employee) {
+      const employeeData = await SurveyService.getEmployeeByNumber(employeeNumber);
+      if (employeeData) {
+        setEmployee(employeeData);
         form.setFieldsValue({
-          employee_name: employee.name,
-          department: employee.department,
-          position: employee.position
+          employee_name: employeeData.name,
+          department: employeeData.department,
+          position: employeeData.position
         });
         return true;
       } else {
@@ -92,8 +94,10 @@ const SurveyForm = () => {
       const values = form.getFieldsValue();
       
       const responseData = {
+        template_id: template?.id || null,
+        employee_id: employee?.id || null,
         employee_number: values.employee_number,
-        employee_name: values.employee_name,
+        employee_name: values.employee_name || employee?.name || '未知员工',
         performance_feedback: values.performance_feedback,
         role_recognition: values.role_recognition,
         support_needs: values.support_needs,
@@ -122,11 +126,14 @@ const SurveyForm = () => {
   const submitSurvey = async () => {
     try {
       setLoading(true);
-      const values = await form.validateFields();
+      await form.validateFields();
+      const values = form.getFieldsValue();
 
       const responseData = {
+        template_id: template?.id || null,
+        employee_id: employee?.id || null,
         employee_number: values.employee_number,
-        employee_name: values.employee_name,
+        employee_name: values.employee_name || employee?.name || '未知员工',
         performance_feedback: values.performance_feedback,
         role_recognition: values.role_recognition,
         support_needs: values.support_needs,
@@ -134,6 +141,9 @@ const SurveyForm = () => {
         efficiency_feedback: values.efficiency_feedback,
         summary: values.summary
       };
+
+      console.log('提交的数据:', responseData);
+      console.log('表单值:', values);
 
       let response;
       if (savedResponseId) {
@@ -207,7 +217,10 @@ const SurveyForm = () => {
               label="工号"
               rules={[{ required: true, message: '请输入工号' }]}
             >
-              <Input placeholder="请输入您的工号" />
+              <Input 
+                placeholder="请输入您的工号" 
+                onBlur={(e) => validateEmployee(e.target.value)}
+              />
             </Form.Item>
             
             <Form.Item
@@ -301,7 +314,60 @@ const SurveyForm = () => {
           layout="vertical"
           onFinish={submitSurvey}
         >
-          {renderStepContent()}
+          {/* 所有表单项都要在DOM中，只是通过CSS控制显示/隐藏 */}
+          <div style={{ display: currentStep === 0 ? 'block' : 'none' }}>
+            <Card title="基本信息" style={{ marginTop: 16 }}>
+              <Form.Item
+                name="employee_number"
+                label="工号"
+                rules={[{ required: true, message: '请输入工号' }]}
+              >
+                <Input 
+                  placeholder="请输入您的工号" 
+                  onBlur={(e) => validateEmployee(e.target.value)}
+                />
+              </Form.Item>
+              
+              <Form.Item
+                name="employee_name"
+                label="姓名"
+                rules={[{ required: true, message: '请输入姓名' }]}
+              >
+                <Input placeholder="请输入您的姓名" />
+              </Form.Item>
+              
+              <Form.Item name="department" label="部门">
+                <Input placeholder="部门信息（自动填充）" disabled />
+              </Form.Item>
+              
+              <Form.Item name="position" label="职位">
+                <Input placeholder="职位信息（自动填充）" disabled />
+              </Form.Item>
+            </Card>
+          </div>
+
+          <div style={{ display: currentStep === 1 ? 'block' : 'none' }}>
+            <div style={{ marginTop: 16 }}>
+              {template && template.questions.sections.map((section, index) => (
+                <Card key={index} title={section.title} style={{ marginBottom: 16 }}>
+                  <p style={{ color: '#666', marginBottom: 16 }}>{section.description}</p>
+                  <Form.Item
+                    name={section.field}
+                    rules={section.required ? [{ required: true, message: `请填写${section.title}` }] : []}
+                  >
+                    <TextArea
+                      rows={4}
+                      placeholder={`请输入${section.title}相关内容...`}
+                    />
+                  </Form.Item>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: currentStep === 2 ? 'block' : 'none' }}>
+            {currentStep === 2 && renderStepContent()}
+          </div>
 
           <div style={{ marginTop: 24, textAlign: 'center' }}>
             <Space>
