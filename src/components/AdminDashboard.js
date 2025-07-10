@@ -22,11 +22,15 @@ import {
   FileTextOutlined,
   UserOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined
+  ClockCircleOutlined,
+  SyncOutlined,
+  TeamOutlined
 } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import { SurveyService } from '../services/surveyService';
-import { SURVEY_STATUS } from '../lib/supabase';
+import { supabase, SURVEY_STATUS, TABLES } from '../lib/supabase';
+import feishuAuth from '../services/feishuAuth';
+import employeeAPI from '../services/employeeAPI';
 import dayjs from 'dayjs';
 
 const { RangePicker } = DatePicker;
@@ -38,6 +42,12 @@ const AdminDashboard = () => {
   const [statistics, setStatistics] = useState({});
   const [selectedResponse, setSelectedResponse] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [syncLoading, setSyncLoading] = useState(false);
+  const [syncModalVisible, setSyncModalVisible] = useState(false);
+  const [syncResults, setSyncResults] = useState(null);
+  const [employeesModalVisible, setEmployeesModalVisible] = useState(false);
+  const [employees, setEmployees] = useState([]);
+  const [employeesLoading, setEmployeesLoading] = useState(false);
   const [filters, setFilters] = useState({
     status: '',
     employeeName: '',
@@ -89,6 +99,119 @@ const AdminDashboard = () => {
       setDetailModalVisible(true);
     } catch (error) {
       message.error('获取详情失败');
+    }
+  };
+
+  // 同步飞书成员
+  const syncMembers = async () => {
+    setSyncLoading(true);
+    try {
+      const results = await employeeAPI.syncEmployees();
+      
+      // 格式化结果以适配现有UI
+      const formattedResults = {
+        success: results.success,
+        total: results.stats?.totalUsers || 0,
+        created: results.stats?.newUsers || 0,
+        updated: results.stats?.updatedUsers || 0,
+        errors: results.stats?.errors?.length || 0,
+        errorDetails: results.stats?.errors || [],
+        activeUsers: results.stats?.activeUsers || 0,
+        inactiveUsers: results.stats?.inactiveUsers || 0,
+        duplicateUsers: results.stats?.duplicateUsers || 0
+      };
+      
+      setSyncResults(formattedResults);
+      setSyncModalVisible(true);
+      
+      if (results.success && formattedResults.errors === 0) {
+        message.success(`同步完成！新增 ${formattedResults.created} 人，更新 ${formattedResults.updated} 人`);
+      } else if (results.success) {
+        message.warning(`同步完成，但有 ${formattedResults.errors} 个错误，请查看详情`);
+      } else {
+        message.error(`同步失败: ${results.message}`);
+      }
+      
+      // 刷新数据
+      await fetchData();
+    } catch (error) {
+      console.error('同步成员失败:', error);
+      message.error('同步失败: ' + error.message);
+    } finally {
+      setSyncLoading(false);
+    }
+  };
+
+  // 确认同步成员
+  const confirmSyncMembers = () => {
+    Modal.confirm({
+      title: '确认同步成员列表',
+      content: '此操作将从飞书获取最新的成员信息并同步到本地数据库。已存在的成员信息将被更新，新成员将被添加。确定要继续吗？',
+      icon: <TeamOutlined />,
+      okText: '确定同步',
+      cancelText: '取消',
+      onOk: syncMembers
+    });
+  };
+
+  // 查看员工列表
+  const viewEmployees = async () => {
+    setEmployeesLoading(true);
+    try {
+      const result = await employeeAPI.getEmployees({
+        page: 1,
+        limit: 100,
+        orderBy: 'created_at',
+        orderDirection: 'desc'
+      });
+      
+      if (result.success) {
+        setEmployees(result.data || []);
+        setEmployeesModalVisible(true);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('获取员工列表失败:', error);
+      message.error('获取员工列表失败: ' + error.message);
+    } finally {
+      setEmployeesLoading(false);
+    }
+  };
+
+  // 验证后端API权限
+  const validateApiPermissions = async () => {
+    try {
+      const result = await employeeAPI.validatePermissions();
+      
+      if (result.success) {
+        message.success('API权限验证通过');
+        console.log('API权限验证结果:', result);
+      } else {
+        message.error(`API权限验证失败: ${result.message}`);
+        console.error('API权限验证失败:', result);
+      }
+    } catch (error) {
+      console.error('验证API权限失败:', error);
+      message.error('验证API权限失败: ' + error.message);
+    }
+  };
+
+  // 检查后端服务健康状态
+  const checkBackendHealth = async () => {
+    try {
+      const result = await employeeAPI.checkHealth();
+      
+      if (result.success) {
+        message.success('后端服务正常');
+        console.log('后端服务健康检查:', result);
+      } else {
+        message.error(`后端服务异常: ${result.message}`);
+        console.error('后端服务异常:', result);
+      }
+    } catch (error) {
+      console.error('后端服务检查失败:', error);
+      message.error('后端服务检查失败: ' + error.message);
     }
   };
 
@@ -281,13 +404,45 @@ const AdminDashboard = () => {
       <Card 
         title="问卷管理" 
         extra={
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={fetchData}
-            loading={loading}
-          >
-            刷新
-          </Button>
+          <Space>
+            <Button 
+              onClick={checkBackendHealth}
+              size="small"
+              type="dashed"
+            >
+              检查后端
+            </Button>
+            <Button 
+              onClick={validateApiPermissions}
+              size="small"
+              type="dashed"
+            >
+              验证权限
+            </Button>
+            <Button 
+              icon={<TeamOutlined />}
+              onClick={viewEmployees}
+              loading={employeesLoading}
+              type="default"
+            >
+              查看员工
+            </Button>
+            <Button 
+              icon={<SyncOutlined />} 
+              onClick={confirmSyncMembers}
+              loading={syncLoading}
+              type="primary"
+            >
+              同步成员列表
+            </Button>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={fetchData}
+              loading={loading}
+            >
+              刷新
+            </Button>
+          </Space>
         }
       >
         {/* 搜索筛选 */}
@@ -404,6 +559,131 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+      </Modal>
+
+      {/* 同步结果模态框 */}
+      <Modal
+        title="同步成员列表结果"
+        open={syncModalVisible}
+        onCancel={() => setSyncModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setSyncModalVisible(false)}>
+            关闭
+          </Button>
+        ]}
+        width={600}
+      >
+        {syncResults && (
+          <div>
+            <Descriptions title="同步统计" bordered column={2}>
+              <Descriptions.Item label="总处理数">{syncResults.total}</Descriptions.Item>
+              <Descriptions.Item label="新增成员">{syncResults.created}</Descriptions.Item>
+              <Descriptions.Item label="更新成员">{syncResults.updated}</Descriptions.Item>
+              <Descriptions.Item label="错误数量">{syncResults.errors}</Descriptions.Item>
+            </Descriptions>
+            
+            {syncResults.errors > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <h4>错误详情：</h4>
+                <div style={{ maxHeight: 200, overflow: 'auto' }}>
+                  {syncResults.errorDetails.map((error, index) => (
+                    <div key={index} style={{ 
+                      background: '#fff2f0', 
+                      border: '1px solid #ffccc7',
+                      borderRadius: '4px',
+                      padding: '8px',
+                      marginBottom: '8px'
+                    }}>
+                      <p><strong>用户ID:</strong> {error.user_id}</p>
+                      <p><strong>姓名:</strong> {error.name}</p>
+                      <p><strong>错误:</strong> {error.error}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {syncResults.errors === 0 && (
+              <div style={{ 
+                marginTop: 16, 
+                textAlign: 'center',
+                color: '#52c41a'
+              }}>
+                <CheckCircleOutlined style={{ fontSize: 24, marginRight: 8 }} />
+                同步完成，无错误！
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* 员工列表模态框 */}
+      <Modal
+        title="员工列表"
+        open={employeesModalVisible}
+        onCancel={() => setEmployeesModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        <Table
+          dataSource={employees}
+          rowKey="id"
+          loading={employeesLoading}
+          pagination={{
+            pageSize: 10,
+            showTotal: (total) => `共 ${total} 名员工`
+          }}
+          columns={[
+            {
+              title: '姓名',
+              dataIndex: 'name',
+              key: 'name',
+              width: 100,
+            },
+            {
+              title: '飞书ID',
+              dataIndex: 'feishu_user_id',
+              key: 'feishu_user_id',
+              width: 120,
+            },
+            {
+              title: '邮箱',
+              dataIndex: 'email',
+              key: 'email',
+              width: 180,
+            },
+            {
+              title: '手机',
+              dataIndex: 'mobile',
+              key: 'mobile',
+              width: 120,
+            },
+            {
+              title: '职位',
+              dataIndex: 'job_title',
+              key: 'job_title',
+              width: 120,
+            },
+            {
+              title: '状态',
+              dataIndex: 'is_active',
+              key: 'is_active',
+              width: 80,
+              render: (isActive) => (
+                <Tag color={isActive ? 'green' : 'red'}>
+                  {isActive ? '在职' : '离职'}
+                </Tag>
+              ),
+            },
+            {
+              title: '最后同步',
+              dataIndex: 'last_sync_time',
+              key: 'last_sync_time',
+              width: 140,
+              render: (time) => time ? dayjs(time).format('YYYY-MM-DD HH:mm') : '-',
+            },
+          ]}
+        />
       </Modal>
     </div>
   );

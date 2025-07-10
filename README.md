@@ -43,31 +43,21 @@ cd perfomance-table
 ### 3. 安装依赖
 
 ```bash
+# 安装前端依赖
 npm install
+
+# 安装后端依赖
+npm run server:install
 ```
 
-### 4. 配置 Supabase
+### 4. 配置环境变量
 
-#### 创建 Supabase 项目
-
-1. 访问 [Supabase](https://supabase.com)
-2. 创建新项目
-3. 获取项目 URL 和 API Key
-
-#### 设置数据库
-
-1. 在 Supabase 控制台中，进入 SQL 编辑器
-2. 复制 `supabase/schema.sql` 中的内容
-3. 执行 SQL 语句创建表结构
-
-#### 配置环境变量
-
+#### 前端配置
 ```bash
 cp .env.example .env
 ```
 
 编辑 `.env` 文件：
-
 ```env
 # Supabase 配置
 REACT_APP_SUPABASE_URL=your_supabase_project_url
@@ -78,17 +68,63 @@ REACT_APP_FEISHU_APP_ID=your_feishu_app_id
 REACT_APP_FEISHU_APP_SECRET=your_feishu_app_secret
 REACT_APP_FEISHU_REDIRECT_URI=http://localhost:3000
 
-# 管理员用户ID列表（用逗号分隔）
-REACT_APP_ADMIN_IDS=your_user_id1,your_user_id2
+# 后端API配置
+REACT_APP_API_BASE_URL=http://localhost:3001/api
+REACT_APP_API_SECRET_KEY=your_api_secret_key
+
+# 管理员配置
+REACT_APP_ADMIN_OPEN_IDS=ou_xxxxxxxxxxxxxxxxxxxx,ou_yyyyyyyyyyyyyyyyyyyy
+```
+
+#### 后端配置
+```bash
+cp server/.env.example server/.env
+```
+
+编辑 `server/.env` 文件：
+```env
+# 服务器配置
+PORT=3001
+NODE_ENV=development
+
+# 飞书应用配置
+FEISHU_APP_ID=your_feishu_app_id
+FEISHU_APP_SECRET=your_feishu_app_secret
+
+# Supabase 配置
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_KEY=your_supabase_service_key
+
+# API安全配置
+API_SECRET_KEY=your_api_secret_key
+CORS_ORIGIN=http://localhost:3000
 ```
 
 ### 5. 启动应用
 
+#### 开发环境
 ```bash
+# 启动后端服务
+npm run server:dev
+
+# 启动前端服务（新终端）
 npm start
 ```
 
-访问 `http://localhost:3000` 查看应用。
+#### 生产环境
+```bash
+# 构建前端
+npm run build
+
+# 启动后端服务
+npm run server:start
+```
+
+### 6. 访问应用
+
+- 前端应用：http://localhost:3000
+- 后端API：http://localhost:3001
+- 健康检查：http://localhost:3001/health
 
 ## 📊 数据库结构
 

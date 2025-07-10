@@ -1,4 +1,5 @@
 import { supabase, TABLES, SURVEY_STATUS } from '../lib/supabase';
+import feishuAuth from './feishuAuth';
 
 export class SurveyService {
   // 获取问卷模板
@@ -231,5 +232,183 @@ export class SurveyService {
 
     if (error) throw error;
     return data;
+  }
+
+  // 同步飞书成员到本地数据库
+  static async syncMembersFromFeishu() {
+    try {
+      console.log('=== 开始同步飞书成员 ===');
+      
+      let feishuUsers = [];
+      
+      // 使用新的从部门获取用户的方法
+      try {
+        console.log('使用新的部门方法获取用户列表...');
+        feishuUsers = await feishuAuth.getAllUsersFromDepartments();
+        console.log(`从飞书API获取到 ${feishuUsers.length} 个用户`);
+        
+        if (feishuUsers.length === 0) {
+          // 如果仍然没有数据，尝试原始API
+          console.log('尝试原始API...');
+          const fallbackResult = await feishuAuth.getAllContactUsers();
+          feishuUsers = fallbackResult || [];
+          console.log(`从原始API获取到 ${feishuUsers.length} 个用户`);
+        }
+      } catch (error) {
+        console.error('所有API尝试都失败了:', error.message);
+        throw new Error('无法从飞书获取用户列表，请检查API权限配置');
+      }
+      
+      // 获取部门信息映射
+      const departments = await feishuAuth.getAllDepartments();
+      const departmentMap = {};
+      
+      if (departments && departments.length > 0) {
+        departments.forEach(dept => {
+          departmentMap[dept.department_id] = dept.name;
+        });
+      }
+
+      const syncResults = {
+        total: feishuUsers.length,
+        created: 0,
+        updated: 0,
+        errors: 0,
+        errorDetails: []
+      };
+
+      // 批量处理用户
+      for (const feishuUser of feishuUsers) {
+        try {
+          // 新的数据结构
+          const userData = {
+            user_id: feishuUser.user_id,
+            name: feishuUser.name,
+            email: feishuUser.email || '',
+            department: this.getDepartmentName(feishuUser.department_ids, departmentMap),
+            position: feishuUser.job_title || '',
+            updated_at: new Date().toISOString()
+          };
+
+          // 检查用户是否已存在
+          const { data: existingUser } = await supabase
+            .from(TABLES.EMPLOYEES)
+            .select('id')
+            .eq('user_id', userData.user_id)
+            .single();
+
+          if (existingUser) {
+            // 更新现有用户
+            const { error } = await supabase
+              .from(TABLES.EMPLOYEES)
+              .update(userData)
+              .eq('user_id', userData.user_id);
+
+            if (error) {
+              syncResults.errors++;
+              syncResults.errorDetails.push({
+                user_id: userData.user_id,
+                name: userData.name,
+                error: error.message
+              });
+            } else {
+              syncResults.updated++;
+            }
+          } else {
+            // 创建新用户
+            const { error } = await supabase
+              .from(TABLES.EMPLOYEES)
+              .insert([userData]);
+
+            if (error) {
+              syncResults.errors++;
+              syncResults.errorDetails.push({
+                user_id: userData.user_id,
+                name: userData.name,
+                error: error.message
+              });
+            } else {
+              syncResults.created++;
+            }
+          }
+        } catch (userError) {
+          syncResults.errors++;
+          syncResults.errorDetails.push({
+            user_id: feishuUser.user_id || 'unknown',
+            name: feishuUser.name || 'unknown',
+            error: userError.message
+          });
+        }
+      }
+
+      return syncResults;
+    } catch (error) {
+      console.error('Sync members error:', error);
+      throw error;
+    }
+  }
+
+  // 辅助函数：获取部门名称
+  static getDepartmentName(departmentIds, departmentMap) {
+    if (!departmentIds || departmentIds.length === 0) {
+      return '未分配部门';
+    }
+    
+    // 取第一个部门作为主要部门
+    const primaryDeptId = departmentIds[0];
+    return departmentMap[primaryDeptId] || '未知部门';
+  }
+
+  // 获取同步历史记录（可选功能）
+  static async getSyncHistory() {
+    // 这里可以记录同步历史，暂时返回简单统计
+    const { count: totalEmployees } = await supabase
+      .from(TABLES.EMPLOYEES)
+      .select('*', { count: 'exact', head: true });
+
+    return {
+      totalEmployees: totalEmployees || 0,
+      lastSyncTime: new Date().toISOString()
+    };
+  }
+
+  // 手动添加员工（临时解决方案）
+  static async addEmployeeManually(employeeData) {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.EMPLOYEES)
+        .insert([{
+          user_id: employeeData.user_id,
+          name: employeeData.name,
+          department: employeeData.department || '待设置',
+          position: employeeData.position || '待设置',
+          email: employeeData.email || '',
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Add employee manually error:', error);
+      throw error;
+    }
+  }
+
+  // 获取所有员工列表
+  static async getAllEmployees() {
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.EMPLOYEES)
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Get all employees error:', error);
+      throw error;
+    }
   }
 }
