@@ -14,7 +14,8 @@
       "Bash(node:*)",
       "Bash(npm run test-departments:*)",
       "Bash(rm:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }
