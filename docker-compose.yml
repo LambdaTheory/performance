@@ -34,7 +34,8 @@ services:
       - FEISHU_APP_ID=${FEISHU_APP_ID}
       - FEISHU_APP_SECRET=${FEISHU_APP_SECRET}
     volumes:
-      - ./server/logs:/app/logs
+      # 移除 logs 挂载，让日志写在容器内部
+      # - ./server/logs:/app/logs
       - ./output:/app/output
     restart: unless-stopped
     networks:
