@@ -37,6 +37,14 @@ const logger = winston.createLogger({
   format: logFormat,
   defaultMeta: { service: 'performance-survey-backend' },
   transports: [
+    // 控制台输出 - 所有环境都启用
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    }),
+    
     // 错误日志文件
     new winston.transports.File({
       filename: path.join(logsDir, 'error.log'),
@@ -53,16 +61,6 @@ const logger = winston.createLogger({
     }),
   ],
 });
-
-// 开发环境添加控制台输出
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.combine(
-      winston.format.colorize(),
-      winston.format.simple()
-    )
-  }));
-}
 
 // 确保logs目录存在
 const fs = require('fs');
