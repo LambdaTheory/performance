@@ -20,9 +20,7 @@ const getEmployeesSchema = {
   query: Joi.object({
     page: Joi.number().integer().min(1).default(1),
     limit: Joi.number().integer().min(1).max(100).default(20),
-    active: Joi.boolean(),
-    search: Joi.string().max(100),
-    department: Joi.string().max(100)
+    search: Joi.string().max(100)
   })
 };
 
@@ -31,7 +29,7 @@ const getEmployeesSchema = {
  * 获取员工列表
  */
 router.get('/', validateRequest(getEmployeesSchema), asyncHandler(async (req, res) => {
-  const { page, limit, active, search, department } = req.query;
+  const { page, limit, search } = req.query;
   const offset = (page - 1) * limit;
 
   // 构建查询
@@ -40,19 +38,9 @@ router.get('/', validateRequest(getEmployeesSchema), asyncHandler(async (req, re
     .select('*', { count: 'exact' });
 
   // 添加过滤条件
-  // active字段在当前数据库中不存在，暂时跳过
-  // if (active !== undefined) {
-  //   query = query.eq('is_active', active);
-  // }
-
   if (search) {
     query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
   }
-
-  // Department filtering removed as department_ids field is no longer used
-  // if (department) {
-  //   query = query.contains('department_ids', [department]);
-  // }
 
   // 分页和排序
   query = query

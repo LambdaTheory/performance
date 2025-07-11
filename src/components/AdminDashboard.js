@@ -160,9 +160,7 @@ const AdminDashboard = () => {
     try {
       const result = await employeeAPI.getEmployees({
         page: 1,
-        limit: 100,
-        orderBy: 'created_at',
-        orderDirection: 'desc'
+        limit: 100
       });
       
       if (result.success) {
