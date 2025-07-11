@@ -179,6 +179,86 @@ class FeishuAPI {
     return results;
   }
 
+  // 获取用户访问令牌
+  async getUserAccessToken(code) {
+    try {
+      logger.debug('开始获取用户访问令牌', { code: code.substring(0, 10) + '...' });
+      
+      const requestData = {
+        grant_type: 'authorization_code',
+        app_id: this.appId,
+        app_secret: this.appSecret,
+        code: code,
+        redirect_uri: process.env.FEISHU_REDIRECT_URI
+      };
+      
+      logger.debug('请求参数:', {
+        grant_type: requestData.grant_type,
+        app_id: requestData.app_id,
+        redirect_uri: requestData.redirect_uri,
+        code: code.substring(0, 10) + '...'
+      });
+
+      const response = await axios.post(`${this.baseUrl}/authen/v1/access_token`, requestData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      logger.debug('飞书API响应:', { 
+        status: response.status, 
+        code: response.data?.code,
+        msg: response.data?.msg 
+      });
+
+      if (response.data.code !== 0) {
+        throw new Error(`获取用户令牌失败: ${response.data.msg}`);
+      }
+
+      return {
+        success: true,
+        access_token: response.data.data.access_token,
+        refresh_token: response.data.data.refresh_token,
+        expires_in: response.data.data.expires_in
+      };
+    } catch (error) {
+      logger.error('获取用户访问令牌失败:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      return {
+        success: false,
+        error: error.message,
+        details: error.response?.data
+      };
+    }
+  }
+
+  // 获取用户信息
+  async getUserInfo(userAccessToken) {
+    try {
+      const response = await axios.get(`${this.baseUrl}/authen/v1/user_info`, {
+        headers: { 'Authorization': `Bearer ${userAccessToken}` }
+      });
+
+      if (response.data.code !== 0) {
+        throw new Error(`获取用户信息失败: ${response.data.msg}`);
+      }
+
+      return {
+        success: true,
+        data: response.data.data
+      };
+    } catch (error) {
+      logger.error('获取用户信息失败:', error.message);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
   // 延迟函数
   async sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

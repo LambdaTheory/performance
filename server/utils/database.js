@@ -78,27 +78,6 @@ const CREATE_EMPLOYEES_TABLE_SQL = `
 `;
 
 /**
- * 初始化数据库表结构
- */
-async function initializeDatabase() {
-  try {
-    logger.info('开始初始化数据库表结构');
-
-    // 跳过表存在性检查，假设表已经存在
-    logger.info('跳过数据库表检查，假设表结构已存在');
-
-    // 简单验证表结构
-    logger.info('数据库初始化跳过，表结构假设正确');
-
-    return { success: true, message: '数据库初始化完成' };
-
-  } catch (error) {
-    logger.error('数据库初始化失败:', error);
-    throw error;
-  }
-}
-
-/**
  * 检查数据库连接
  */
 async function checkDatabaseConnection() {
@@ -152,7 +131,6 @@ async function getDatabaseStats() {
 module.exports = {
   supabase,
   TABLES,
-  initializeDatabase,
   checkDatabaseConnection,
   getDatabaseStats,
   CREATE_EMPLOYEES_TABLE_SQL

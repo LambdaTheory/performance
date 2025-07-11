@@ -7,15 +7,15 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-require('dotenv').config();
+require('dotenv').config({ path: __dirname + '/.env' });
 
 const logger = require('./utils/logger');
-const { initializeDatabase } = require('./utils/database');
 const { startCronJobs } = require('./utils/scheduler');
 
 // 路由导入
 const employeeRoutes = require('./routes/employees');
 const healthRoutes = require('./routes/health');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -64,6 +64,7 @@ app.use((req, res, next) => {
 // 路由配置
 app.use('/api/health', healthRoutes);
 app.use('/api/employees', employeeRoutes);
+app.use('/api/auth', authRoutes);
 
 // 根路由
 app.get('/', (req, res) => {
@@ -105,10 +106,6 @@ app.use((err, req, res, next) => {
 // 服务器启动
 async function startServer() {
   try {
-    // 初始化数据库
-    await initializeDatabase();
-    logger.info('数据库初始化完成');
-
     // 启动定时任务
     if (process.env.AUTO_SYNC_ENABLED === 'true') {
       startCronJobs();
@@ -118,7 +115,7 @@ async function startServer() {
     // 启动HTTP服务器
     app.listen(PORT, () => {
       logger.info(`服务器已启动: http://localhost:${PORT}`);
-      logger.info(`环境: ${process.env.NODE_ENV}`);
+      logger.info(`环境: ${process.env.NODE_ENV} ${process.env.FEISHU_APP_ID} ${process.env.FEISHU_APP_SECRET}`);
       logger.info(`CORS Origin: ${process.env.CORS_ORIGIN}`);
     });
 

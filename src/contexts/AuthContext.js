@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { message } from 'antd';
-import feishuAuth from '../services/feishuAuth';
+import authAPI from '../services/authAPI';
 
 const AuthContext = createContext();
 
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
 
   const initializeAuth = async () => {
     try {
-      const userData = feishuAuth.getUserData();
+      const userData = authAPI.getUserData();
       if (userData) {
         setUser(userData.user);
         setIsAuthenticated(true);
@@ -36,25 +36,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = () => {
+  const login = async () => {
     try {
-      const authUrl = feishuAuth.generateAuthUrl();
+      const authUrl = await authAPI.generateAuthUrl();
       window.location.href = authUrl;
     } catch (error) {
       console.error('Login failed:', error);
-      // 检查是否是因为失败次数过多被阻止
-      if (error.message.includes('认证服务已暂停')) {
-        message.error(error.message, 10); // 显示10秒
-      } else {
-        message.error('登录失败，请重试');
-      }
+      message.error('登录失败: ' + error.message);
     }
   };
 
   const handleAuthCallback = async (urlParams) => {
     setLoading(true);
     try {
-      const userData = await feishuAuth.handleAuthCallback(urlParams);
+      const userData = await authAPI.handleAuthCallback(urlParams);
       setUser(userData.user);
       setIsAuthenticated(true);
       message.success(`欢迎回来，${userData.user.name}！`);
@@ -65,12 +60,7 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (error) {
       console.error('Auth callback failed:', error);
-      // 检查是否是因为失败次数过多被阻止
-      if (error.message.includes('认证服务已暂停')) {
-        message.error(error.message, 10); // 显示10秒
-      } else {
-        message.error('登录失败: ' + error.message);
-      }
+      message.error('登录失败: ' + error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -79,7 +69,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     try {
-      feishuAuth.logout();
+      authAPI.logout();
       setUser(null);
       setIsAuthenticated(false);
       message.success('已成功退出登录');
@@ -91,8 +81,8 @@ export const AuthProvider = ({ children }) => {
 
   const refreshToken = async () => {
     try {
-      await feishuAuth.refreshToken();
-      const userData = feishuAuth.getUserData();
+      await authAPI.refreshToken();
+      const userData = authAPI.getUserData();
       if (userData) {
         setUser(userData.user);
         setIsAuthenticated(true);
