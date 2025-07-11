@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://backend:3001
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - FEISHU_APP_ID=${FEISHU_APP_ID}
+      - FEISHU_APP_SECRET=${FEISHU_APP_SECRET}
+      - FEISHU_TENANT_ACCESS_TOKEN=${FEISHU_TENANT_ACCESS_TOKEN}
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - ./server/logs:/app/logs
+      - ./output:/app/output
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  logs:
+  output:
