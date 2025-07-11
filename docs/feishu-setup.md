@@ -115,7 +115,6 @@ cp .env.example .env
 ```env
 # 飞书OAuth配置
 REACT_APP_FEISHU_APP_ID=cli_xxxxxxxxxxxxxxxxx
-REACT_APP_FEISHU_APP_SECRET=your_app_secret_here
 REACT_APP_FEISHU_REDIRECT_URI=http://localhost:3000
 
 # 管理员邮箱列表（用逗号分隔）
@@ -140,7 +139,6 @@ npm start
 
 ```bash
 export REACT_APP_FEISHU_APP_ID="cli_xxxxxxxxxxxxxxxxx"
-export REACT_APP_FEISHU_APP_SECRET="your_production_secret"
 export REACT_APP_FEISHU_REDIRECT_URI="https://your-domain.com"
 export REACT_APP_ADMIN_EMAILS="admin@yourcompany.com"
 ```

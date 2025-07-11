@@ -3,6 +3,8 @@ import axios from 'axios';
 class FeishuAuthService {
   constructor() {
     this.appId = process.env.REACT_APP_FEISHU_APP_ID;
+    // 安全警告：在生产环境中，不应该在前端暴露 app secret
+    // 建议使用后端代理来处理 token 交换
     this.appSecret = process.env.REACT_APP_FEISHU_APP_SECRET;
     this.redirectUri = process.env.REACT_APP_FEISHU_REDIRECT_URI;
     // 在开发环境使用代理，生产环境使用直接URL

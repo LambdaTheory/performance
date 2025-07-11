@@ -65,7 +65,6 @@ REACT_APP_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # 飞书OAuth配置
 REACT_APP_FEISHU_APP_ID=your_feishu_app_id
-REACT_APP_FEISHU_APP_SECRET=your_feishu_app_secret
 REACT_APP_FEISHU_REDIRECT_URI=http://localhost:3000
 
 # 后端API配置
