@@ -27,8 +27,6 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
 // 表名常量
 const TABLES = {
   EMPLOYEES: 'PT_employees',
-  SURVEY_TEMPLATES: 'PT_survey_templates', 
-  SURVEY_RESPONSES: 'PT_survey_responses',
   USERS: 'PT_users'
 };
 

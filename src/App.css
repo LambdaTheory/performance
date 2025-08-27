@@ -29,18 +29,34 @@
 }
 
 /* 问卷表单样式 */
-.survey-form {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 24px;
+/* 删除所有问卷相关样式 */
+/* 删除第31-33行的问卷相关注释 */
+/* 删除第76行的 .survey-form 样式规则 */
+
+/* 保留其他样式 */
+.app-header {
+  padding: 0 24px;
 }
 
-.survey-form .ant-steps {
-  margin-bottom: 24px;
+.ant-layout-sider {
+  background: #fff;
 }
 
-.survey-form .ant-card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.ant-menu {
+  border-right: 1px solid #e8e8e8;
+}
+
+.ant-card {
+  margin-bottom: 16px;
+}
+
+.ant-table-tbody > tr > td {
+  padding: 8px 16px;
+}
+
+.ant-descriptions-item-label {
+  background: #fafafa;
+  font-weight: 500;
 }
 
 /* 管理后台样式 */
@@ -65,4 +81,44 @@
   .admin-dashboard {
     padding: 16px;
   }
+}
+
+/* 删除Header中Tab的下边框 */
+.header-tabs .ant-tabs-nav-wrap {
+  border-bottom: none !important;
+}
+
+.header-tabs .ant-tabs-nav {
+  margin-bottom: 0 !important;
+}
+
+.header-tabs .ant-tabs-tab {
+  margin-bottom: 0 !important;
+}
+
+/* 确保Tab内容垂直居中 */
+.header-tabs .ant-tabs-nav-wrap {
+  display: flex;
+  align-items: center;
+  height: 64px;
+}
+
+/* 确保Tab容器高度一致 */
+.header-tabs .ant-tabs-content-holder {
+  display: none;
+}
+
+/* 确保Tab导航列表在左侧 */
+.header-tabs .ant-tabs-nav-list {
+  justify-content: flex-start !important;
+  margin-left: 0 !important;
+}
+
+/* 确保Tab导航容器占满可用空间但内容左对齐 */
+.header-tabs .ant-tabs-nav {
+  width: 100% !important;
+}
+
+.header-tabs .ant-tabs-nav::before {
+  display: none !important;
 }

@@ -65,7 +65,8 @@ const LoginPage = () => {
           <div>
             <TeamOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
             <Title level={2} style={{ margin: 0, color: '#1890ff' }}>
-              绩效问卷管理系统
+              // 第68行修改标题为：
+              绩效管理系统
             </Title>
             <Text type="secondary">
               使用飞书账号登录，开始您的绩效评估之旅

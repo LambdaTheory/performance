@@ -7,9 +7,9 @@ import './index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>  // 临时注释掉
     <ConfigProvider locale={zhCN}>
       <App />
     </ConfigProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

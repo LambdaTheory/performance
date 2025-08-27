@@ -1,6 +1,6 @@
-# Performance Survey Backend API
+# Performance Management Backend API
 
-员工绩效调查系统后端API服务
+员工绩效管理系统后端API服务
 
 ## 功能特性
 

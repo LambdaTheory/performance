@@ -263,6 +263,29 @@ class FeishuAPI {
   async sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  // 获取用户详细信息（包括上级关系）
+  async getUserDetail(userId, tenantAccessToken, options = {}) {
+    const { userIdType = 'user_id' } = options;
+    
+    try {
+      const response = await axios.get(`${this.baseUrl}/contact/v3/users/${userId}`, {
+        headers: { 'Authorization': `Bearer ${tenantAccessToken}` },
+        params: { 
+          user_id_type: userIdType
+        }
+      });
+      
+      if (response.data.code !== 0) {
+        throw new Error(`获取用户详细信息失败: ${response.data.msg}`);
+      }
+      
+      return response.data.data.user;
+    } catch (error) {
+      logger.warn(`获取用户 ${userId} 详细信息失败: ${error.message}`);
+      return null;
+    }
+  }
 }
 
 module.exports = FeishuAPI;

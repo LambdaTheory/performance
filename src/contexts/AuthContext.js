@@ -52,6 +52,18 @@ export const AuthProvider = ({ children }) => {
       const userData = await authAPI.handleAuthCallback(urlParams);
       setUser(userData.user);
       setIsAuthenticated(true);
+      
+      // 添加用户ID显示逻辑
+      console.log('=== 用户登录信息 ===');
+      console.log('用户ID:', userData.user.id);
+      console.log('用户姓名:', userData.user.name);
+      console.log('用户邮箱:', userData.user.email);
+      console.log('是否管理员:', userData.user.isAdmin);
+      console.log('==================');
+      
+      // 在页面上也显示用户ID（可选）
+      alert(`登录成功！\n\n用户ID: ${userData.user.id}\n姓名: ${userData.user.name}\n邮箱: ${userData.user.email}\n\n请将用户ID添加到服务器的 .env 文件中：\nADMIN_IDS=${userData.user.id}`);
+      
       message.success(`欢迎回来，${userData.user.name}！`);
       
       // 清理URL参数
@@ -97,15 +109,8 @@ export const AuthProvider = ({ children }) => {
   const getUserRole = () => {
     if (!user) return null;
     
-    // 使用用户ID进行管理员识别
-    const adminIds = process.env.REACT_APP_ADMIN_IDS?.split(',').map(id => id.trim()) || [];
-    
-    // 检查用户ID是否在管理员列表中
-    if (adminIds.includes(user.id)) {
-      return 'admin';
-    }
-    
-    return 'user';
+    // 系统只有管理员角色，所有登录用户都是管理员
+    return 'admin';
   };
 
   const value = {

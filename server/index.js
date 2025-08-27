@@ -16,16 +16,15 @@ const { startCronJobs } = require('./utils/scheduler');
 const employeeRoutes = require('./routes/employees');
 const healthRoutes = require('./routes/health');
 const authRoutes = require('./routes/auth');
+const importRoutes = require('./routes/import'); // 新增
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // 中间件配置
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true
-}));
+app.use(cors());
+
 
 // 速率限制
 const limiter = rateLimit({
@@ -65,6 +64,7 @@ app.use((req, res, next) => {
 app.use('/api/health', healthRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/import', importRoutes); // 新增
 
 // 根路由
 app.get('/', (req, res) => {

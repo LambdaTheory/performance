@@ -18,7 +18,7 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   },
   global: {
     headers: {
-      'X-Client-Info': 'performance-survey-system'
+      'X-Client-Info': 'performance-evaluation-system'
     }
   }
 });
@@ -26,20 +26,13 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 // 数据库表名常量
 export const TABLES = {
   EMPLOYEES: 'pt_employees',
-  SURVEY_TEMPLATES: 'pt_survey_templates',
-  SURVEY_RESPONSES: 'pt_survey_responses',
-  USERS: 'pt_users'
-};
-
-// 数据状态常量
-export const SURVEY_STATUS = {
-  DRAFT: 'draft',
-  SUBMITTED: 'submitted', 
-  REVIEWED: 'reviewed'
+  USERS: 'pt_users',
+  INDICATORS: 'PT_indicators',
+  EVALUATION_TEMPLATES: 'PT_evaluation_templates',
+  EVALUATIONS: 'PT_evaluations'
 };
 
 export const USER_ROLES = {
-  USER: 'user',
-  ADMIN: 'admin',
-  MANAGER: 'manager'
+  ADMIN: 'admin'
+  // 删除 USER: 'user'
 };

@@ -1,0 +1,123 @@
+[
+  {
+    "id": 1756203607600,
+    "filename": "2025年第2季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756203607600.json",
+    "recordCount": 3,
+    "periods": [
+      "2025年第2季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T10:20:07.601Z"
+  },
+  {
+    "id": 1756196063055,
+    "filename": "2025年第2季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756196063055.json",
+    "recordCount": 3,
+    "periods": [
+      "2025年第2季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T08:14:23.055Z"
+  },
+  {
+    "id": 1756194701228,
+    "filename": "2025年第2季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756194701228.json",
+    "recordCount": 3,
+    "periods": [
+      "2025年第2季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T07:51:41.228Z"
+  },
+  {
+    "id": 1756193080900,
+    "filename": "2024年第4季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756193080900.json",
+    "recordCount": 3,
+    "periods": [
+      "2024年第4季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T07:24:40.901Z"
+  },
+  {
+    "id": 1756191183038,
+    "filename": "2025年第1季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756191183038.json",
+    "recordCount": 7,
+    "periods": [
+      "2025年第1季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T06:53:03.039Z"
+  },
+  {
+    "id": 1756190754043,
+    "filename": "2025年第1季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756190754043.json",
+    "recordCount": 3,
+    "periods": [
+      "2025年第1季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T06:45:54.045Z"
+  },
+  {
+    "id": 1756188438632,
+    "filename": "2025年第1季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756188438632.json",
+    "recordCount": 3,
+    "periods": [
+      "2025年第1季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T06:07:18.634Z"
+  },
+  {
+    "id": 1756187823604,
+    "filename": "2025年第1季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756187823604.json",
+    "recordCount": 3,
+    "periods": [
+      "2025年第1季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-26T05:57:03.605Z"
+  },
+  {
+    "id": 1756115867552,
+    "filename": "2025年第2季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756115867552.json",
+    "recordCount": 3,
+    "periods": [
+      "2025年第2季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-25T09:57:47.553Z"
+  },
+  {
+    "id": 1756115774636,
+    "filename": "2024年第2季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756115774636.json",
+    "recordCount": 3,
+    "periods": [
+      "2024年第2季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-25T09:56:14.637Z"
+  },
+  {
+    "id": 1756115116773,
+    "filename": "2025年第2季度绩效考核明细表.xlsx",
+    "filepath": "D:\\performance\\performance\\server\\data\\performance\\performance_1756115116773.json",
+    "recordCount": 5,
+    "periods": [
+      "2025年第2季度"
+    ],
+    "status": "success",
+    "importTime": "2025-08-25T09:45:16.774Z"
+  }
+]

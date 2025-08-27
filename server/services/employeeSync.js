@@ -111,8 +111,8 @@ class EmployeeSyncService {
       
       logger.info(`总共获取到 ${allUsers.length} 个用户记录（包含重复）`);
       
-      // 4. 处理和去重用户
-      const processedUsers = this.processUsers(allUsers);
+      // 4. 处理和去重用户 - 传递tenantAccessToken参数
+      const processedUsers = await this.processUsers(allUsers, tenantAccessToken);
       logger.info(`处理后得到 ${processedUsers.length} 个有效用户`);
       
       return processedUsers;
@@ -124,8 +124,9 @@ class EmployeeSyncService {
     }
   }
 
-  // 处理用户数据（去重和格式化）
-  processUsers(users) {
+  // 删除这行重复的注释：// 处理用户数据（去重和格式化）
+  // 处理用户数据（包括上级关系）
+  async processUsers(users, tenantAccessToken) {
     const allUsers = new Map();
     
     for (const user of users) {
@@ -139,17 +140,24 @@ class EmployeeSyncService {
           this.stats.duplicateUsers++;
           logger.debug(`发现重复用户: ${user.name}`);
         } else {
+          // 获取用户详细信息以获取上级关系
+          const userDetail = await this.api.getUserDetail(user.user_id, tenantAccessToken);
+          
           allUsers.set(user.user_id, {
             user_id: user.user_id,
             name: user.name,
             email: user.email || '',
             department: '', // 暂时留空，根据需要可以添加部门信息
             position: user.job_title || '',
+            leader_user_id: userDetail?.leader_user_id || null, // 添加上级用户ID
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
           this.stats.activeUsers++;
           logger.debug(`处理在职用户: ${user.name}`);
+          
+          // 添加延迟避免API频率限制
+          await this.api.sleep(50);
         }
       } else {
         this.stats.inactiveUsers++;
@@ -293,37 +301,76 @@ class EmployeeSyncService {
   // 主同步方法
   async syncEmployees() {
     try {
-      const startTime = Date.now();
-      logger.info('开始员工同步任务');
-      
-      // 重置统计信息
+      logger.info('开始员工同步流程');
       this.resetStats();
       
-      // 1. 从飞书获取用户数据
-      const users = await this.getAllUsersFromFeishu();
+      // 获取访问令牌
+      const tenantAccessToken = await this.api.getTenantAccessToken();
       
-      // 2. 同步到数据库
-      await this.syncUsersToDatabase(users);
+      // 获取所有用户数据
+      const allUsers = await this.getAllUsersFromFeishu();
+      logger.info(`从飞书获取到 ${allUsers.length} 个用户`);
       
-      const duration = Date.now() - startTime;
-      logger.info(`员工同步完成，耗时 ${duration}ms`);
+      // 处理用户数据（包括获取上级关系）
+      const processedUsers = await this.processUsers(allUsers, tenantAccessToken);
+      logger.info(`处理后得到 ${processedUsers.length} 个在职用户`);
       
+      // 同步到数据库（第一轮：创建/更新用户基本信息）
+      await this.syncUsersToDatabase(processedUsers);
+      
+      // 处理上级关系映射（第二轮：更新manager_id）
+      const usersWithManagers = await this.processManagerRelationships(processedUsers);
+      await this.updateManagerRelationships(usersWithManagers);
+      
+      logger.info('员工同步完成', this.stats);
       return {
         success: true,
-        message: '员工数据同步完成',
-        stats: this.stats,
-        duration: duration,
-        timestamp: new Date().toISOString()
+        stats: this.stats
       };
-      
     } catch (error) {
-      logger.error('员工同步失败:', error);
+      logger.error('员工同步失败:', error.message);
+      this.stats.errors.push(error.message);
       return {
         success: false,
-        message: `员工数据同步失败: ${error.message}`,
-        stats: this.stats,
-        timestamp: new Date().toISOString()
+        error: error.message,
+        stats: this.stats
       };
+    }
+  }
+
+  // 更新上级关系
+  async updateManagerRelationships(users) {
+    logger.info('开始更新上级关系');
+    
+    const usersWithManagers = users.filter(user => user.manager_id);
+    
+    if (usersWithManagers.length === 0) {
+      logger.info('没有需要更新上级关系的用户');
+      return;
+    }
+    
+    try {
+      for (const user of usersWithManagers) {
+        const { error } = await supabase
+          .from(TABLES.EMPLOYEES)
+          .update({ 
+            manager_id: user.manager_id,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.user_id);
+        
+        if (error) {
+          logger.error(`更新用户 ${user.name} 的上级关系失败: ${error.message}`);
+          this.stats.errors.push(`更新上级关系失败: ${user.name}`);
+        } else {
+          logger.debug(`用户 ${user.name} 的上级关系更新成功`);
+        }
+      }
+      
+      logger.info(`上级关系更新完成，处理了 ${usersWithManagers.length} 个用户`);
+    } catch (error) {
+      logger.error('批量更新上级关系失败:', error.message);
+      throw error;
     }
   }
 
@@ -351,6 +398,52 @@ class EmployeeSyncService {
         timestamp: new Date().toISOString()
       };
     }
+  }
+
+  // 查找本地员工ID（通过飞书用户ID）
+  async findLocalEmployeeId(feishuUserId) {
+    if (!feishuUserId) return null;
+    
+    try {
+      const { data, error } = await supabase
+        .from(TABLES.EMPLOYEES)
+        .select('id')
+        .eq('user_id', feishuUserId)
+        .single();
+      
+      if (error || !data) {
+        return null;
+      }
+      
+      return data.id;
+    } catch (error) {
+      logger.warn(`查找员工ID失败 (飞书ID: ${feishuUserId}): ${error.message}`);
+      return null;
+    }
+  }
+
+  // 处理上级关系映射
+  async processManagerRelationships(users) {
+    logger.info('开始处理上级关系映射');
+    
+    for (const user of users) {
+      if (user.leader_user_id) {
+        // 查找上级在本地数据库中的ID
+        const managerId = await this.findLocalEmployeeId(user.leader_user_id);
+        user.manager_id = managerId;
+        
+        if (managerId) {
+          logger.debug(`用户 ${user.name} 的上级关系已映射`);
+        } else {
+          logger.warn(`用户 ${user.name} 的上级 ${user.leader_user_id} 在数据库中未找到`);
+        }
+      }
+      
+      // 清理临时字段
+      delete user.leader_user_id;
+    }
+    
+    return users;
   }
 }
 

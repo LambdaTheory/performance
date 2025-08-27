@@ -93,10 +93,17 @@ router.post('/feishu/callback', async (req, res) => {
     const adminIds = process.env.ADMIN_IDS?.split(',') || [];
     const isAdmin = adminIds.includes(userInfo.data.user_id);
 
-    logger.info('用户认证成功', { 
+    // --- 添加以下调试日志 --- START
+    logger.info('DEBUG: ADMIN_IDS from env', { adminIdsEnv: process.env.ADMIN_IDS });
+    logger.info('DEBUG: Parsed adminIds array', { adminIdsArray: adminIds });
+    logger.info('DEBUG: User ID from Feishu', { feishuUserId: userInfo.data.user_id });
+    logger.info('DEBUG: Is user an admin?', { calculatedIsAdmin: isAdmin });
+    // --- 添加以下调试日志 --- END
+
+    logger.info('用户认证成功', {
       userId: userInfo.data.user_id,
       name: userInfo.data.name,
-      isAdmin 
+      isAdmin
     });
 
     // 返回用户信息（生产环境中应该生成JWT token）
