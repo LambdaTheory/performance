@@ -4,7 +4,7 @@
     "detectedPeriods": [
       "2025年第2季度"
     ],
-    "totalRecords": 3,
+    "totalRecords": 0,
     "headers": [
       "姓名",
       "工号",
@@ -54,80 +54,9 @@
       "上级评分-Kun（100.0%）",
       "上级评分"
     ],
-    "lastModified": "2025-08-26T08:16:59.497Z"
+    "lastModified": "2025-08-27T06:42:17.165Z"
   },
-  "data": [
-    {
-      "id": "1756196063053_1",
-      "employeeName": "步诺言",
-      "employeeId": "",
-      "department": "我游科技",
-      "position": "",
-      "evaluationForm": "管理层-绩效考核表",
-      "evaluationPeriod": "2025年第2季度",
-      "currentNode": "考核结束",
-      "dimensionName": "专业度",
-      "indicatorName": "专业度",
-      "assessmentStandard": "●求真务实\n  - 遇到问题不逃避、不粉饰，分析问题解决问题\n  - 关注最终结果，不做形式主义的工作\n\n●认真负责\n  -  不轻视简单的工作，不畏惧困难的工作\n  -  有担当，对自己负责的工作结果负责，全力以赴\n\n●开放合作\n  - 互相尊重，坦诚沟通\n  - 在更大的目标下达成共识，共同推动目标达成\n\n●持续进步\n  -  持续改进工作，追求更好的结果\n  -  虚心学习，成为更好的自己",
-      "weight": 0.3,
-      "selfEvaluationResult": "",
-      "peerEvaluationResult": "",
-      "supervisorEvaluationResult": "",
-      "level": "M",
-      "performanceResult": "",
-      "evaluator": "",
-      "evaluationDate": null,
-      "comments": "",
-      "rawRowIndex": 3
-    },
-    {
-      "id": "1756196063053_2",
-      "employeeName": "步诺言",
-      "employeeId": "",
-      "department": "我游科技",
-      "position": "",
-      "evaluationForm": "管理层-绩效考核表",
-      "evaluationPeriod": "2025年第2季度",
-      "currentNode": "考核结束",
-      "dimensionName": "领导力",
-      "indicatorName": "领导力",
-      "assessmentStandard": "11111111111111111111",
-      "weight": 0.3,
-      "selfEvaluationResult": "",
-      "peerEvaluationResult": "",
-      "supervisorEvaluationResult": "",
-      "level": "M",
-      "performanceResult": "",
-      "evaluator": "",
-      "evaluationDate": null,
-      "comments": "",
-      "rawRowIndex": 4,
-      "lastModified": "2025-08-26T08:16:02.449Z"
-    },
-    {
-      "id": "1756196219497_3",
-      "employeeName": "步诺言",
-      "employeeId": "",
-      "department": "我游科技",
-      "position": "",
-      "evaluationForm": "管理层-绩效考核表",
-      "evaluationPeriod": "2025年第2季度",
-      "currentNode": "考核结束",
-      "dimensionName": "11111",
-      "indicatorName": "11111",
-      "assessmentStandard": "11111111111",
-      "weight": 0.1,
-      "selfEvaluationResult": "",
-      "peerEvaluationResult": "",
-      "supervisorEvaluationResult": "",
-      "level": "M",
-      "evaluator": "",
-      "evaluationDate": null,
-      "comments": "",
-      "rawRowIndex": 4,
-      "createdAt": "2025-08-26T08:16:59.497Z"
-    }
-  ],
+  "data": [],
   "importTime": "2025-08-26T08:14:23.055Z",
   "id": 1756196063055
 }

@@ -4,7 +4,7 @@
     "detectedPeriods": [
       "2024年第4季度"
     ],
-    "totalRecords": 3,
+    "totalRecords": 0,
     "headers": [
       "姓名",
       "工号",
@@ -53,79 +53,10 @@
       "360°评分-大马评分说明",
       "上级评分-Kun（100.0%）",
       "上级评分"
-    ]
+    ],
+    "lastModified": "2025-08-27T06:42:27.365Z"
   },
-  "data": [
-    {
-      "id": "1756193080898_0",
-      "employeeName": "qqq",
-      "employeeId": "",
-      "department": "我游科技",
-      "position": "",
-      "evaluationForm": "员工季度绩效考核表",
-      "evaluationPeriod": "2024年第4季度",
-      "currentNode": "考核结束",
-      "dimensionName": "工作业绩",
-      "indicatorName": "工作业绩",
-      "assessmentStandard": "111111111111111111111",
-      "weight": 0.4,
-      "selfEvaluationResult": "",
-      "peerEvaluationResult": "",
-      "supervisorEvaluationResult": "",
-      "level": "M+",
-      "performanceResult": "0   M+",
-      "evaluator": "",
-      "evaluationDate": null,
-      "comments": "",
-      "rawRowIndex": 2
-    },
-    {
-      "id": "1756193080898_1",
-      "employeeName": "qqq",
-      "employeeId": "",
-      "department": "我游科技",
-      "position": "",
-      "evaluationForm": "员工季度绩效考核表",
-      "evaluationPeriod": "2024年第4季度",
-      "currentNode": "考核结束",
-      "dimensionName": "专业度",
-      "indicatorName": "专业度",
-      "assessmentStandard": "●求真务实\n  - 遇到问题不逃避、不粉饰，分析问题解决问题\n  - 关注最终结果，不做形式主义的工作\n\n●认真负责\n  -  不轻视简单的工作，不畏惧困难的工作\n  -  有担当，对自己负责的工作结果负责，全力以赴\n\n●开放合作\n  - 互相尊重，坦诚沟通\n  - 在更大的目标下达成共识，共同推动目标达成\n\n●持续进步\n  -  持续改进工作，追求更好的结果\n  -  虚心学习，成为更好的自己",
-      "weight": 0.3,
-      "selfEvaluationResult": "",
-      "peerEvaluationResult": "",
-      "supervisorEvaluationResult": "",
-      "level": "M+",
-      "performanceResult": "",
-      "evaluator": "",
-      "evaluationDate": null,
-      "comments": "",
-      "rawRowIndex": 3
-    },
-    {
-      "id": "1756193080898_2",
-      "employeeName": "qqq",
-      "employeeId": "",
-      "department": "我游科技",
-      "position": "",
-      "evaluationForm": "员工季度绩效考核表",
-      "evaluationPeriod": "2024年第4季度",
-      "currentNode": "考核结束",
-      "dimensionName": "领导力",
-      "indicatorName": "领导力",
-      "assessmentStandard": "1、对业务结果负责\n2、对复杂的事情有判断\n3、培养发展好团队\n4、创造良好的工作氛围",
-      "weight": 0.3,
-      "selfEvaluationResult": "",
-      "peerEvaluationResult": "",
-      "supervisorEvaluationResult": "",
-      "level": "M+",
-      "performanceResult": "",
-      "evaluator": "",
-      "evaluationDate": null,
-      "comments": "",
-      "rawRowIndex": 4
-    }
-  ],
+  "data": [],
   "importTime": "2025-08-26T07:24:40.900Z",
   "id": 1756193080900
 }
