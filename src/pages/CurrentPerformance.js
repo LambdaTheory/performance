@@ -1,5 +1,6 @@
-import React from 'react';
-import { Card, Divider } from 'antd';
+import React, { useState } from 'react';
+import { Card, Divider, Button, Modal } from 'antd';
+import { UploadOutlined, HistoryOutlined } from '@ant-design/icons';
 
 // 导入自定义 hooks
 import usePerformanceData from '../hooks/usePerformanceData';
@@ -10,6 +11,7 @@ import useIndicatorOperations from '../hooks/useIndicatorOperations';
 // 导入模块组件
 import DataImport from '../components/Performance/DataImport';
 import DataFilter from '../components/Performance/DataFilter';
+import ImportHistory from '../components/Performance/ImportHistory';
 import EmployeeList from '../components/Performance/EmployeeList';
 import EmployeeDetailModal from '../components/Performance/EmployeeDetailModal';
 import EditEmployeeModal from '../components/Performance/EditEmployeeModal';
@@ -23,6 +25,10 @@ function CurrentPerformance() {
   const dataImport = useDataImport(performanceData.fetchAllPerformance);
   const employeeOps = useEmployeeOperations(performanceData.fetchAllPerformance);
   const indicatorOps = useIndicatorOperations();
+  
+  // 弹窗状态管理
+  const [importModalVisible, setImportModalVisible] = useState(false);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
   
   // 移除这个调试日志
   // console.log('employeeOps状态:', {
@@ -71,15 +77,53 @@ function CurrentPerformance() {
 
   return (
     <div style={{ padding: '24px' }}>
-      {/* 数据导入区域 */}
-      <Card title="数据导入" style={{ marginBottom: '24px' }}>
-        <DataImport {...dataImport} onImport={dataImport.handleImport} />
-      </Card>
-
       <Divider />
 
-      {/* 本周期绩效管理区域 */}
-      <Card title="本周期绩效管理">
+      {/* 导入数据弹窗 */}
+      <Modal
+        title="导入数据"
+        open={importModalVisible}
+        onCancel={() => setImportModalVisible(false)}
+        footer={null}
+        width={800}
+        destroyOnHidden={true}
+      >
+        <DataImport {...dataImport} />
+      </Modal>
+
+      {/* 导入历史弹窗 */}
+      <Modal
+        title="导入历史"
+        open={historyModalVisible}
+        onCancel={() => setHistoryModalVisible(false)}
+        footer={null}
+        width={600}
+        destroyOnHidden={true}
+      >
+        <ImportHistory importHistory={dataImport.importHistory} />
+      </Modal>
+
+      {/* 员工列表 */}
+      <Card 
+        title="绩效管理" 
+        extra={
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button 
+              type="primary"
+              icon={<UploadOutlined />}
+              onClick={() => setImportModalVisible(true)}
+            >
+              导入数据
+            </Button>
+            <Button 
+              icon={<HistoryOutlined />}
+              onClick={() => setHistoryModalVisible(true)}
+            >
+              导入历史
+            </Button>
+          </div>
+        }
+      >
         {/* 筛选器 */}
         <DataFilter 
           availableEvaluationForms={performanceData.availableEvaluationForms}

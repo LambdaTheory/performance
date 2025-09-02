@@ -4,7 +4,6 @@ import { message } from 'antd';
 const useDataImport = (onImportSuccess) => {
   const [file, setFile] = useState(null);
   const [importing, setImporting] = useState(false);
-  const [importResults, setImportResults] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [importHistory, setImportHistory] = useState([]);
   const [filePreview, setFilePreview] = useState(null);
@@ -95,12 +94,13 @@ const useDataImport = (onImportSuccess) => {
 
     setImporting(true);
     setUploadProgress(0);
-    setImportResults(null);
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
+      console.log('开始上传文件:', file.name, '大小:', file.size);
+      
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
           if (prev >= 90) {
@@ -119,9 +119,11 @@ const useDataImport = (onImportSuccess) => {
       clearInterval(progressInterval);
       setUploadProgress(100);
       
+      console.log('服务器响应状态:', response.status);
+      
       if (response.ok) {
         const result = await response.json();
-        setImportResults(result);
+        console.log('导入成功结果:', result);
         message.success('导入成功！');
         
         await fetchImportHistory();
@@ -132,17 +134,23 @@ const useDataImport = (onImportSuccess) => {
         setFile(null);
         setFilePreview(null);
       } else {
-        throw new Error('导入失败');
+        // 尝试解析错误响应
+        let errorMessage = '导入失败';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || '导入失败';
+        } catch (e) {
+          // 如果不是JSON格式，尝试读取文本
+          const errorText = await response.text();
+          errorMessage = errorText || `服务器错误: ${response.status}`;
+        }
+        
+        console.error('服务器错误响应:', response.status, errorMessage);
+        throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('导入失败:', error);
-      message.error('导入失败，请检查文件格式和网络连接');
-      
-      setImportResults({
-        success: false,
-        message: '导入失败',
-        error: error.message
-      });
+      console.error('导入失败详情:', error);
+      message.error(`导入失败: ${error.message}`);
     } finally {
       setImporting(false);
       setTimeout(() => setUploadProgress(0), 2000);
@@ -152,12 +160,11 @@ const useDataImport = (onImportSuccess) => {
   return {
     file,
     importing,
-    importResults,
     uploadProgress,
     importHistory,
     filePreview,
     uploadProps,
-    handleImport,
+    onImport: handleImport, // 修复属性名不匹配问题
     fetchImportHistory
   };
 };

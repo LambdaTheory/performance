@@ -105,68 +105,7 @@ const EditIndicatorModal = ({
             placeholder="请输入权重百分比（如：40）"
           />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-          <div>
-            <label><strong>自评：</strong></label>
-            <input 
-              type="text" 
-              value={editingIndicator.selfEvaluationResult || ''} 
-              readOnly
-              disabled
-              style={{ 
-                width: '100%', 
-                padding: '8px', 
-                marginTop: '4px', 
-                border: '1px solid #d9d9d9', 
-                borderRadius: '4px',
-                backgroundColor: '#f5f5f5',
-                color: '#999',
-                cursor: 'not-allowed'
-              }}
-              placeholder="评分内容不可编辑"
-            />
-          </div>
-          <div>
-            <label><strong>360°互评：</strong></label>
-            <input 
-              type="text" 
-              value={editingIndicator.peerEvaluationResult || ''} 
-              readOnly
-              disabled
-              style={{ 
-                width: '100%', 
-                padding: '8px', 
-                marginTop: '4px', 
-                border: '1px solid #d9d9d9', 
-                borderRadius: '4px',
-                backgroundColor: '#f5f5f5',
-                color: '#999',
-                cursor: 'not-allowed'
-              }}
-              placeholder="评分内容不可编辑"
-            />
-          </div>
-          <div>
-            <label><strong>上级评分：</strong></label>
-            <input 
-              type="text" 
-              value={editingIndicator.supervisorEvaluationResult || ''} 
-              readOnly
-              disabled
-              style={{ 
-                width: '100%', 
-                padding: '8px', 
-                marginTop: '4px', 
-                border: '1px solid #d9d9d9', 
-                borderRadius: '4px',
-                backgroundColor: '#f5f5f5',
-                color: '#999',
-                cursor: 'not-allowed'
-              }}
-              placeholder="评分内容不可编辑"
-            />
-          </div>
-        </div>
+
       </div>
     </Modal>
   );

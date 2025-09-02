@@ -29,16 +29,10 @@ const usePerformanceData = () => {
       const result = await response.json();
       
       if (result.success) {
-        // 修改过滤条件，包含更多状态的数据
-        const filteredRecords = (result.data.records || []).filter(record => 
-          record.currentNode === '正在考核' || 
-          record.currentNode === '考核结束' || 
-          record.currentNode === '待考核' ||
-          !record.currentNode // 包含没有状态字段的记录
+        // 筛选状态 - 本周期绩效只显示正在考核状态的数据
+        const currentPeriodRecords = (result.data.records || []).filter(record => 
+          record.currentNode === '正在考核'
         );
-        
-        // 本周期绩效显示所有有效的数据，不再只限制"正在考核"
-        const currentPeriodRecords = filteredRecords;
         
         setPerformanceData(currentPeriodRecords);
         

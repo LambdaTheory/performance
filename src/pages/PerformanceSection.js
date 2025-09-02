@@ -22,7 +22,7 @@ function PerformanceSection() {
   const tabItems = [
     {
       key: 'current-performance',
-      label: '本周期绩效',
+      label: '正在考核',
       children: <CurrentPerformance />
     },
     {

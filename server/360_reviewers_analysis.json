@@ -1,0 +1,207 @@
+{
+  "reviewerCountByHeader": {
+    "1": {
+      "fromReviewersArray": [
+        "郑志宏",
+        "孙文秦"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "2": {
+      "fromReviewersArray": [
+        "黎柏江",
+        "潘韵芝"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "3": {
+      "fromReviewersArray": [
+        "潘韵芝",
+        "刘志润"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "4": {
+      "fromReviewersArray": [
+        "杨华明",
+        "陈泽堃"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "5": {
+      "fromReviewersArray": [
+        "潘韵芝",
+        "唐嘉浩"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "6": {
+      "fromReviewersArray": [
+        "谭杰萍",
+        "洪伟填"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "7": {
+      "fromReviewersArray": [
+        "卢林粲",
+        "杨华明"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "8": {
+      "fromReviewersArray": [
+        "黄贵祥",
+        "许功史"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "9": {
+      "fromReviewersArray": [
+        "许功史",
+        "植锦涛"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "10": {
+      "fromReviewersArray": [
+        "杨华明",
+        "许功史"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "11": {
+      "fromReviewersArray": [
+        "郑志宏",
+        "唐嘉浩"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "12": {
+      "fromReviewersArray": [
+        "郭勇",
+        "梁凌健"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "13": {
+      "fromReviewersArray": [
+        "黄贵祥",
+        "植锦涛"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "14": {
+      "fromReviewersArray": [
+        "郑志宏",
+        "黎柏江"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "15": {
+      "fromReviewersArray": [
+        "邹玲英",
+        "黎柏江"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "16": {
+      "fromReviewersArray": [
+        "陈泽堃",
+        "唐嘉浩"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "17": {
+      "fromReviewersArray": [
+        "郑志宏",
+        "唐嘉浩"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    },
+    "18": {
+      "fromReviewersArray": [
+        "陈泽堃",
+        "孔垂华"
+      ],
+      "fromHeaderFields": [
+        "刘志润",
+        "郑志宏"
+      ],
+      "count": 2
+    }
+  },
+  "allReviewers": [
+    "刘志润",
+    "郑志宏"
+  ],
+  "totalUniqueReviewers": 2
+}

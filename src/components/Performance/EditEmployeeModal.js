@@ -66,12 +66,14 @@ const EditEmployeeModal = ({
         </div>
         <div>
           <label><strong>当前节点：</strong></label>
-          <input 
-            type="text" 
+          <select 
             value={editingEmployee.currentNode} 
             onChange={(e) => onEmployeeChange({...editingEmployee, currentNode: e.target.value})}
             style={{ width: '100%', padding: '8px', marginTop: '4px', border: '1px solid #d9d9d9', borderRadius: '4px' }}
-          />
+          >
+            <option value="正在考核">正在考核</option>
+            <option value="考核结束">考核结束</option>
+          </select>
         </div>
       </div>
     </Modal>

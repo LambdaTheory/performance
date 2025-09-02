@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直接文件上传测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .progress {
+            margin: 20px 0;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <h1>直接文件上传测试</h1>
+    <p>测试文件上传功能是否正常工作</p>
+
+    <div class="upload-area" id="uploadArea">
+        <p>拖拽文件到此处或</p>
+        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+        <button onclick="document.getElementById('fileInput').click()">选择文件</button>
+    </div>
+
+    <div id="fileInfo" style="display: none;">
+        <h3>文件信息</h3>
+        <p>文件名: <span id="fileName"></span></p>
+        <p>大小: <span id="fileSize"></span></p>
+    </div>
+
+    <button id="uploadBtn" disabled>开始上传</button>
+
+    <div class="progress" id="progress" style="display: none;">
+        <label>上传进度: <span id="progressPercent">0%</span></label>
+        <progress id="progressBar" value="0" max="100" style="width: 100%;"></progress>
+    </div>
+
+    <div class="log" id="log">
+        <strong>日志输出:</strong>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        function log(message, type = '') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type ? ` class="${type}"` : '';
+            logDiv.innerHTML += `<div${className}>[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateProgress(percent) {
+            document.getElementById('progressPercent').textContent = percent + '%';
+            document.getElementById('progressBar').value = percent;
+            document.getElementById('progress').style.display = 'block';
+        }
+
+        // 文件选择处理
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + 'MB';
+                document.getElementById('fileInfo').style.display = 'block';
+                document.getElementById('uploadBtn').disabled = false;
+                log(`选择文件: ${file.name} (${file.size} bytes)`);
+            }
+        });
+
+        // 拖拽上传
+        const uploadArea = document.getElementById('uploadArea');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                const isExcel = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                               file.type === 'application/vnd.ms-excel';
+                
+                if (!isExcel) {
+                    log('错误: 请选择Excel文件', 'error');
+                    return;
+                }
+                
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(2) + 'MB';
+                document.getElementById('fileInfo').style.display = 'block';
+                document.getElementById('uploadBtn').disabled = false;
+                log(`拖拽选择文件: ${file.name} (${file.size} bytes)`);
+            }
+        });
+
+        // 上传按钮点击
+        document.getElementById('uploadBtn').addEventListener('click', async function() {
+            if (!selectedFile) {
+                log('错误: 请先选择文件', 'error');
+                return;
+            }
+
+            const button = this;
+            button.disabled = true;
+            updateProgress(0);
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            log('开始上传文件...');
+            log(`URL: http://localhost:3001/api/import/excel`);
+            log(`文件: ${selectedFile.name} (${selectedFile.size} bytes)`);
+
+            try {
+                const xhr = new XMLHttpRequest();
+                
+                // 监听上传进度
+                xhr.upload.addEventListener('progress', function(e) {
+                    if (e.lengthComputable) {
+                        const percentComplete = Math.round((e.loaded / e.total) * 100);
+                        updateProgress(percentComplete);
+                        log(`上传进度: ${percentComplete}%`);
+                    }
+                });
+
+                // 监听完成
+                xhr.addEventListener('load', function() {
+                    log(`服务器响应状态: ${xhr.status}`);
+                    log(`服务器响应: ${xhr.responseText}`);
+                    
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            log('上传成功!', 'success');
+                            log(`响应数据: ${JSON.stringify(response, null, 2)}`);
+                        } catch (e) {
+                            log('解析响应失败: ' + e.message, 'error');
+                        }
+                    } else {
+                        log(`上传失败: HTTP ${xhr.status}`, 'error');
+                    }
+                    
+                    button.disabled = false;
+                });
+
+                // 监听错误
+                xhr.addEventListener('error', function() {
+                    log('网络错误: 上传失败', 'error');
+                    button.disabled = false;
+                });
+
+                xhr.addEventListener('timeout', function() {
+                    log('超时错误: 上传超时', 'error');
+                    button.disabled = false;
+                });
+
+                xhr.open('POST', 'http://localhost:3001/api/import/excel');
+                xhr.send(formData);
+
+            } catch (error) {
+                log('上传错误: ' + error.message, 'error');
+                button.disabled = false;
+            }
+        });
+
+        // 页面加载日志
+        log('页面加载完成');
+        log('测试服务器: http://localhost:3001/api/import/excel');
+    </script>
+</body>
+</html>

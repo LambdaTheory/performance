@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单上传测试</title>
+</head>
+<body>
+    <h1>简单文件上传测试</h1>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+    <button onclick="uploadFile()">上传</button>
+    <div id="result"></div>
+
+    <script>
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('请选择文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://localhost:3001/api/import/excel', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.text();
+                document.getElementById('result').innerHTML = `
+                    <h3>响应状态: ${response.status}</h3>
+                    <pre>${result}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <h3>错误: ${error.message}</h3>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

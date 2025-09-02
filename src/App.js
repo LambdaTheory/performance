@@ -27,7 +27,7 @@ import './App.css';
 
 
 const { Header, Content } = Layout;
-const { TabPane } = Tabs;
+// 移除 TabPane 导入，使用新的 items API
 const { Option } = Select;
 const { Dragger } = Upload;
 
@@ -104,19 +104,17 @@ function MainApp() {
             alignItems: 'center'
           }}
           className="header-tabs"
-        >
-          {mainTabs.map(tab => (
-            <TabPane
-              tab={
-                <span>
-                  {tab.icon}
-                  {tab.label}
-                </span>
-              }
-              key={tab.key}
-            />
-          ))}
-        </Tabs>
+          items={mainTabs.map(tab => ({
+            key: tab.key,
+            label: (
+              <span>
+                {tab.icon}
+                {tab.label}
+              </span>
+            ),
+            children: null
+          }))}
+        />
         
         {/* 右侧：用户信息和退出按钮 */}
         <Space style={{ height: '64px', alignItems: 'center' }}>

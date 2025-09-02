@@ -1,0 +1,43 @@
+{
+  "timestamp": "2025-09-01T09:41:05.454Z",
+  "originalIssue": "Excel导入仅支持2个固定评价人",
+  "rootCause": "表头解析逻辑硬编码了评价人数量",
+  "fixDescription": "动态解析所有360°评分字段，支持任意数量评价人",
+  "testResult": {
+    "reviewerCount": 3,
+    "reviewers": [
+      "李四",
+      "王五",
+      "赵六"
+    ],
+    "fields": [
+      {
+        "reviewerName": "李四",
+        "resultIndex": 9,
+        "remarkIndex": -1,
+        "resultHeader": "360°评分-李四（80%）",
+        "remarkHeader": ""
+      },
+      {
+        "reviewerName": "王五",
+        "resultIndex": 11,
+        "remarkIndex": -1,
+        "resultHeader": "360°评分-王五（90%）",
+        "remarkHeader": ""
+      },
+      {
+        "reviewerName": "赵六",
+        "resultIndex": 13,
+        "remarkIndex": -1,
+        "resultHeader": "360°评分-赵六（75%）",
+        "remarkHeader": ""
+      }
+    ]
+  },
+  "nextSteps": [
+    "替换ExcelParserService类",
+    "更新import.js路由",
+    "重新导入原始Excel文件",
+    "验证360°评价人数量正确性"
+  ]
+}

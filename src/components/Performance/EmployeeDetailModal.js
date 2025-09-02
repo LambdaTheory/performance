@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Card, Button, Space, Table, message } from 'antd';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const EmployeeDetailModal = ({
   visible, // 保留这个参数名，因为父组件传递的是visible
@@ -48,7 +49,7 @@ const EmployeeDetailModal = ({
       title: '指标名称',
       dataIndex: 'indicatorName',
       key: 'indicatorName',
-      width: 200,
+      width: 120,
       render: (text) => (
         <div style={{ 
           wordBreak: 'break-word',
@@ -63,7 +64,7 @@ const EmployeeDetailModal = ({
       title: '考核标准',
       dataIndex: 'assessmentStandard',
       key: 'assessmentStandard',
-      width: 400,
+      width: 350,
       render: (text) => (
         <div style={{ 
           wordBreak: 'break-word',
@@ -79,12 +80,55 @@ const EmployeeDetailModal = ({
       title: '权重',
       dataIndex: 'weight',
       key: 'weight',
-      width: 100,
+      width: 80,
       render: (weight) => {
         if (!weight) return '-';
         const percentage = Math.round(weight * 100);
         return `${percentage}%`;
       }
+    },
+
+    {
+      title: '操作',
+      key: 'actions',
+      width: 80,
+      render: (_, record, index) => (
+        <Space size="small">
+          <Button 
+            type="link" 
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              Modal.confirm({
+                title: '确认删除',
+                content: `确定要删除指标"${record.indicatorName}"吗？`,
+                onOk: () => {
+                  onDeleteIndicator(index);
+                }
+              });
+            }}
+            style={{ padding: '0 4px' }}
+          >
+              删除
+            </Button>
+          {(record.indicatorName?.includes('工作业绩') || record.indicatorName?.includes('业绩') || record.indicatorName?.includes('绩效') || record.indicatorName?.includes('KPI')) && (
+            <Button 
+              type="link" 
+              size="small"
+              icon={<EditOutlined />}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditIndicator(index);
+              }}
+              style={{ padding: '0 4px' }}
+            >
+              编辑
+            </Button>
+          )}
+        </Space>
+      )
     }
   ];
 
@@ -182,90 +226,16 @@ const EmployeeDetailModal = ({
           title={
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>{`考核指标 (${selectedEmployee.indicators.length}项)`}</span>
-              <Space>
-                <Button 
-                  type="primary"
-                  size="small"
-                  onClick={() => onEditEmployee(selectedEmployee)}
-                >
-                  编辑员工信息
-                </Button>
-                <Button 
-                  type={operationMode === 'edit' ? 'primary' : 'default'}
-                  size="small"
-                  onClick={() => {
-                    if (operationMode === 'edit') {
-                      onSetOperationMode(null);
-                      onSetSelectedIndicatorIndex(null);
-                    } else {
-                      onSetOperationMode('edit');
-                      onSetSelectedIndicatorIndex(null);
-                      message.info('请点击要编辑的指标行');
-                    }
-                  }}
-                >
-                  {operationMode === 'edit' ? '取消编辑' : '编辑指标'}
-                </Button>
-                <Button 
-                  type={operationMode === 'delete' ? 'primary' : 'default'}
-                  danger={operationMode !== 'delete'}
-                  size="small"
-                  onClick={() => {
-                    if (operationMode === 'delete') {
-                      onSetOperationMode(null);
-                      onSetSelectedIndicatorIndex(null);
-                    } else {
-                      onSetOperationMode('delete');
-                      onSetSelectedIndicatorIndex(null);
-                      message.info('请点击要删除的指标行');
-                    }
-                  }}
-                >
-                  {operationMode === 'delete' ? '取消删除' : '删除指标'}
-                </Button>
-              </Space>
             </div>
           } 
           size="small"
         >
-          {operationMode && (
-            <div style={{ 
-              padding: '8px 16px', 
-              marginBottom: '16px', 
-              backgroundColor: operationMode === 'edit' ? '#e6f7ff' : '#fff2e8',
-              border: `1px solid ${operationMode === 'edit' ? '#91d5ff' : '#ffbb96'}`,
-              borderRadius: '4px'
-            }}>
-              <span style={{ color: operationMode === 'edit' ? '#1890ff' : '#fa8c16' }}>
-                {operationMode === 'edit' ? '📝 编辑模式：请点击要编辑的指标行' : '🗑️ 删除模式：请点击要删除的指标行'}
-              </span>
-            </div>
-          )}
           <Table
             dataSource={selectedEmployee.indicators.map((item, index) => ({ ...item, key: index }))}
             columns={columns}
             pagination={false}
             size="small"
-            tableLayout="fixed"
-            onRow={(record, index) => ({
-              onClick: () => handleRowClick(record, index),
-              style: {
-                cursor: operationMode ? 'pointer' : 'default',
-                backgroundColor: operationMode && selectedIndicatorIndex === index ? 
-                  (operationMode === 'edit' ? '#e6f7ff' : '#fff2e8') : 'transparent',
-                transition: 'background-color 0.2s'
-              },
-              onMouseEnter: (e) => {
-                if (operationMode) {
-                  e.currentTarget.style.backgroundColor = operationMode === 'edit' ? '#f0f9ff' : '#fef7f0';
-                }
-              },
-              onMouseLeave: (e) => {
-                if (operationMode && selectedIndicatorIndex !== index) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }
-              }
-            })}
+            tableLayout="auto"
           />
         </Card>
       </div>

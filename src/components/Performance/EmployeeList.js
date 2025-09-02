@@ -13,7 +13,6 @@ const EmployeeList = ({
       title: '员工姓名',
       dataIndex: 'employeeName',
       key: 'employeeName',
-      fixed: 'left',
       width: 120
     },
     {
@@ -52,19 +51,16 @@ const EmployeeList = ({
       key: 'indicatorCount',
       width: 100,
       render: (_, record) => {
-        // 修复：处理扁平化数据结构，计算该员工的指标数量
-        const employeeIndicators = groupedData.filter(item => 
-          item.employeeName === record.employeeName
-        );
+        // 使用record.indicators数组长度作为指标数量
+        const indicatorCount = record.indicators?.length || 0;
         return (
-          <Tag color="blue">{employeeIndicators.length}</Tag>
+          <Tag color="blue">{indicatorCount}</Tag>
         );
       }
     },
     {
       title: '操作',
       key: 'action',
-      fixed: 'right',
       width: 180,
       render: (_, record) => (
         <Space>

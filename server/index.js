@@ -17,6 +17,7 @@ const employeeRoutes = require('./routes/employees');
 const healthRoutes = require('./routes/health');
 const authRoutes = require('./routes/auth');
 const importRoutes = require('./routes/import'); // 新增
+const performance360Routes = require('./routes/performance360'); // 360°评价数据路由
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -65,6 +66,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/import', importRoutes); // 新增
+app.use('/api/performance360', performance360Routes); // 360°评价数据路由
 
 // 根路由
 app.get('/', (req, res) => {

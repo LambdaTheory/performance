@@ -148,22 +148,74 @@ class ExcelParserService {
         throw new Error('Excel文件数据不足，至少需要包含表头和一行数据');
       }
       
-      const headers = jsonData[0];
-      const rows = jsonData.slice(1);
+      // 查找所有表头行（包含"所在考评表"的行）
+      const headerRows = [];
+      for (let i = 0; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        if (row && row.some(cell => String(cell).includes('所在考评表'))) {
+          headerRows.push({
+            index: i,
+            headers: row
+          });
+        }
+      }
+      
+      if (headerRows.length === 0) {
+        throw new Error('未找到包含"所在考评表"的表头行');
+      }
+      
+      console.log(`发现 ${headerRows.length} 个子表，开始逐个处理...`);
+      
+      const allData = [];
+      const detectedPeriods = new Set();
+      const allHeaders = [];
       
       // 从文件名提取考核周期
       const periodFromFilename = this.extractPeriodFromFilename(originalFilename);
       
-      // 解析数据
-      const parsedData = this.parsePerformanceData(headers, rows, periodFromFilename);
-      const detectedPeriods = this.detectPeriods(parsedData);
+      // 处理每个子表
+      for (let i = 0; i < headerRows.length; i++) {
+        const headerInfo = headerRows[i];
+        const headers = headerInfo.headers;
+        
+        // 确定数据行的结束位置（下一个表头行或文件末尾）
+        let endIndex = jsonData.length;
+        if (i < headerRows.length - 1) {
+          endIndex = headerRows[i + 1].index;
+        }
+        
+        const rows = jsonData.slice(headerInfo.index + 1, endIndex);
+        
+        console.log(`处理子表 ${i + 1}: 表头行 ${headerInfo.index + 1}, 数据行 ${rows.length} 条`);
+        
+        // 分割为每个员工小表
+        const employeeTables = this.splitIntoEmployeeTables(headers, rows);
+        
+        // 处理每个员工小表
+        employeeTables.forEach(table => {
+          const employeeData = this.parseSingleEmployeeTable(table.headers, table.rows, table.employeeName, periodFromFilename);
+          allData.push(...employeeData);
+        });
+        
+        allHeaders.push(...headers);
+      }
+      
+      // 过滤掉表头行数据（员工姓名为"姓名"或空值的记录）
+      const validData = allData.filter(record => 
+        record.employeeName && 
+        record.employeeName !== '姓名' && 
+        record.employeeName !== '工号' &&
+        record.employeeName.trim() !== ''
+      );
+      
+      console.log(`原始数据 ${allData.length} 条，有效数据 ${validData.length} 条`);
       
       return {
         success: true,
-        data: parsedData,
-        detectedPeriods,
-        totalRecords: parsedData.length,
-        headers
+        data: validData,
+        detectedPeriods: Array.from(detectedPeriods),
+        totalRecords: validData.length,
+        headers: [...new Set(allHeaders)] // 去重后的表头
       };
     } catch (error) {
       logger.error('Excel解析失败:', error);
@@ -199,41 +251,68 @@ class ExcelParserService {
   }
 
   parsePerformanceData(headers, rows, defaultPeriod = null) {
+    // 该方法现在仅用于兼容旧逻辑，实际解析已转移到 parseSingleEmployeeTable
+    return [];
+  }
+
+  // 新增：按员工分割数据为小表
+  splitIntoEmployeeTables(headers, rows) {
+    const tables = [];
+    let currentTable = null;
+    
+    rows.forEach((row, index) => {
+      const nameIndex = headers.findIndex(h => String(h).includes('姓名'));
+      const employeeName = row[nameIndex] ? String(row[nameIndex]).trim() : '';
+      
+      // 如果找到新的员工姓名，创建新表
+      if (employeeName && employeeName !== '姓名' && employeeName !== '工号') {
+        if (currentTable) {
+          tables.push(currentTable);
+        }
+        currentTable = {
+          headers: headers,
+          rows: [row],
+          employeeName: employeeName
+        };
+      } else if (currentTable) {
+        // 添加到当前员工表
+        currentTable.rows.push(row);
+      }
+    });
+    
+    if (currentTable) {
+      tables.push(currentTable);
+    }
+    
+    return tables;
+  }
+
+  // 新增：解析单个员工的小表
+  parseSingleEmployeeTable(headers, rows, employeeName, defaultPeriod) {
     const data = [];
     const columnMap = this.mapColumns(headers);
     
-    // 记录当前员工信息
-    let currentEmployee = null;
+    if (!employeeName || employeeName === '姓名' || employeeName === '工号') {
+      return [];
+    }
     
-    // 遍历数据行
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      
-      // 获取员工姓名
-      const employeeName = row[columnMap.name] ? String(row[columnMap.name]).trim() : '';
-      
-      // 如果有员工姓名，更新当前员工信息（只在员工姓名不为空且与当前员工不同时更新）
-      if (employeeName && (!currentEmployee || currentEmployee.name !== employeeName)) {
-        currentEmployee = {
-          name: employeeName,
-          id: row[columnMap.employeeId] ? String(row[columnMap.employeeId]).trim() : '',
-          department: row[columnMap.department] ? String(row[columnMap.department]).trim() : '',
-          position: row[columnMap.position] ? String(row[columnMap.position]).trim() : '',
-          evaluationForm: row[columnMap.evaluationForm] ? String(row[columnMap.evaluationForm]).trim() : '',
-          evaluationPeriod: row[columnMap.period] ? String(row[columnMap.period]).trim() : defaultPeriod,
-          currentNode: row[columnMap.currentNode] ? String(row[columnMap.currentNode]).trim() : '',
-          level: row[columnMap.level] ? String(row[columnMap.level]).trim() : '',
-          evaluator: row[columnMap.evaluator] ? String(row[columnMap.evaluator]).trim() : '',
-          evaluationDate: this.parseDate(row[columnMap.date])
-        };
-      }
-      
-      // 如果没有当前员工信息，跳过这一行
-      if (!currentEmployee) {
-        continue;
-      }
-      
-      // 获取维度和指标信息
+    // 获取员工基本信息（从第一行获取）
+    const firstRow = rows[0] || [];
+    const employeeInfo = {
+      name: employeeName,
+      id: firstRow[columnMap.employeeId] ? String(firstRow[columnMap.employeeId]).trim() : '',
+      department: firstRow[columnMap.department] ? String(firstRow[columnMap.department]).trim() : '',
+      position: firstRow[columnMap.position] ? String(firstRow[columnMap.position]).trim() : '',
+      evaluationForm: firstRow[columnMap.evaluationForm] ? String(firstRow[columnMap.evaluationForm]).trim() : '',
+      evaluationPeriod: firstRow[columnMap.period] ? String(firstRow[columnMap.period]).trim() : defaultPeriod,
+      currentNode: firstRow[columnMap.currentNode] ? String(firstRow[columnMap.currentNode]).trim() : '',
+      level: firstRow[columnMap.level] ? String(firstRow[columnMap.level]).trim() : '',
+      evaluator: firstRow[columnMap.evaluator] ? String(firstRow[columnMap.evaluator]).trim() : '',
+      evaluationDate: this.parseDate(firstRow[columnMap.date])
+    };
+    
+    // 遍历该员工的所有指标行
+    rows.forEach((row, index) => {
       const dimensionName = row[columnMap.dimensionName] ? String(row[columnMap.dimensionName]).trim() : '';
       const indicatorName = row[columnMap.indicatorName] ? String(row[columnMap.indicatorName]).trim() : '';
       
@@ -243,52 +322,71 @@ class ExcelParserService {
         !indicatorName.includes('总评') && 
         !indicatorName.includes('小计');
       
-      // 只有当有维度或指标信息且是有效指标时才创建记录
       if ((dimensionName || indicatorName) && isValidIndicator) {
-        // 如果当前行没有员工基本信息，从currentEmployee继承
-        // 在parsePerformanceData方法中，修改record对象的创建部分
         const record = {
-          id: `${Date.now()}_${i}`,
-          employeeName: currentEmployee.name,
-          employeeId: currentEmployee.id,
-          department: currentEmployee.department,
-          position: currentEmployee.position,
-          evaluationForm: currentEmployee.evaluationForm,
-          evaluationPeriod: currentEmployee.evaluationPeriod,
-          currentNode: currentEmployee.currentNode,
+          id: `${Date.now()}_${index}`,
+          employeeName: employeeInfo.name,
+          employeeId: employeeInfo.id,
+          department: employeeInfo.department,
+          position: employeeInfo.position,
+          evaluationForm: employeeInfo.evaluationForm,
+          evaluationPeriod: employeeInfo.evaluationPeriod,
+          currentNode: employeeInfo.currentNode,
           dimensionName: dimensionName,
           indicatorName: indicatorName,
           assessmentStandard: row[columnMap.evaluationStandard] ? String(row[columnMap.evaluationStandard]).trim() : '',
           weight: this.parseWeight(row[columnMap.weight]),
           
-          // 评估结果
+          // 评估结果 - 基础字段
           selfEvaluationResult: row[columnMap.selfEvaluationResult] ? String(row[columnMap.selfEvaluationResult]).trim() : '',
-          peerEvaluationResult: row[columnMap.peerEvaluationResult] ? String(row[columnMap.peerEvaluationResult]).trim() : '',
+          selfEvaluationRemark: row[columnMap.selfEvaluationRemark] ? String(row[columnMap.selfEvaluationRemark]).trim() : '',
           supervisorEvaluationResult: row[columnMap.supervisorEvaluationResult] ? String(row[columnMap.supervisorEvaluationResult]).trim() : '',
+          supervisorEvaluationRemark: row[columnMap.supervisorEvaluationRemark] ? String(row[columnMap.supervisorEvaluationRemark]).trim() : '',
           
-          level: currentEmployee.level,
-          // 新增：绩效结果字段
-          // 在第271行附近添加调试
-          performanceResult: (() => {
-            const value = row[columnMap.performanceResult] ? String(row[columnMap.performanceResult]).trim() : '';
-            console.log(`行 ${i+2} 绩效结果值:`, value);
-            return value;
-          })(),
-          evaluator: currentEmployee.evaluator,
-          evaluationDate: currentEmployee.evaluationDate,
+          level: employeeInfo.level,
+          performanceResult: row[columnMap.performanceResult] ? String(row[columnMap.performanceResult]).trim() : '',
+          evaluator: employeeInfo.evaluator,
+          evaluationDate: employeeInfo.evaluationDate,
           comments: row[columnMap.comments] ? String(row[columnMap.comments]).trim() : '',
-          rawRowIndex: i + 2
+          rawRowIndex: index + 2
         };
+        
+        // 处理360°评分字段 - 使用mapColumns中收集的字段映射
+        columnMap.peerEvaluationFields.forEach(field => {
+          if (field.type === 'result') {
+            const originalHeader = field.key;
+            
+            // 提取评价人姓名
+            let reviewerName = null;
+            const match = originalHeader.match(/^360°评分-([^（(]+)/);
+            if (match && match[1]) {
+              reviewerName = match[1].trim();
+            }
+            
+            if (reviewerName) {
+              const resultValue = this.getCellValue(row, field.index);
+              const remarkField = columnMap.peerEvaluationFields.find(f => 
+                f.type === 'remark' && f.key.includes(reviewerName)
+              );
+              const remarkValue = remarkField ? this.getCellValue(row, remarkField.index) : '';
+              
+              // 动态添加评价人字段
+              record[`peerEvaluationResult_${reviewerName}`] = resultValue;
+              record[`peerEvaluationRemark_${reviewerName}`] = remarkValue;
+            }
+          }
+        });
         
         data.push(record);
       }
-    }
+    });
     
     return data;
   }
 
   mapColumns(headers) {
     const map = {};
+    map.peerEvaluationFields = [];
     
     headers.forEach((header, index) => {
       const headerStr = String(header || '').toLowerCase();
@@ -332,17 +430,24 @@ class ExcelParserService {
       else if (headerStr.includes('自评-') && !headerStr.includes('说明')) {
         map.selfEvaluationResult = index;
       } else if (headerStr.includes('自评') && headerStr.includes('说明')) {
-        map.selfEvaluationComment = index;
+        map.selfEvaluationRemark = index;
       }
-      // 360°互评 (修复匹配逻辑 - 匹配带人名的格式)
-      else if (headerStr.includes('360°评分-') && !headerStr.includes('说明')) {
-        // 如果还没有找到互评结果列，就使用第一个找到的
-        if (!map.peerEvaluationResult) {
-          map.peerEvaluationResult = index;
-        }
-      } else if (headerStr.includes('360°评分') && headerStr.includes('说明')) {
-        if (!map.peerEvaluationComment) {
-          map.peerEvaluationComment = index;
+      // 360°评分字段 - 仅收集索引，不预设键名
+      else if (originalHeader.startsWith('360°评分-')) {
+        if (originalHeader.includes('评分说明')) {
+          // 评分说明字段
+          map.peerEvaluationFields.push({
+            key: originalHeader, // 保持原始表头
+            index: index,
+            type: 'remark'
+          });
+        } else {
+          // 评分结果字段
+          map.peerEvaluationFields.push({
+            key: originalHeader, // 保持原始表头
+            index: index,
+            type: 'result'
+          });
         }
       }
       // 上级评分 (修复匹配逻辑 - 匹配带人名和权重的格式)
@@ -353,6 +458,10 @@ class ExcelParserService {
         if (!map.supervisorEvaluationResult) {
           map.supervisorEvaluationResult = index;
         }
+      }
+      // 上级评分说明
+      else if (headerStr.includes('上级评分') && headerStr.includes('说明')) {
+        map.supervisorEvaluationRemark = index;
       }
       // 原有字段保持不变（删除总分相关映射）
       else if (headerStr.includes('评价人') || headerStr.includes('考核人') || headerStr.includes('evaluator')) {
